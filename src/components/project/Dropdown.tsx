@@ -8,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface DisciplinaDropdownProps {
+interface DropdownProps {
     label: string
     options: Option[];
     selectedOption: Option;
@@ -20,7 +20,7 @@ export function Dropdown({
     options,
     selectedOption,
     onOptionSelect,
-}: DisciplinaDropdownProps) {
+}: DropdownProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

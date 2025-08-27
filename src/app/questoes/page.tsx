@@ -2,6 +2,7 @@
 
 import { AppHeader } from "@/components/project/AppHeader";
 import { Dropdown } from "@/components/project/Dropdown";
+import { Questao } from "@/components/project/Questao";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -138,7 +139,7 @@ export default function QuestoesScreen() {
 
                     <section className="bg-white/60 backdrop-blur-sm border border-white/30 rounded-3xl shadow-xl p-6 md:p-8 min-h-96">
                         <div className="flex items-center justify-center h-full text-gray-500 text-lg font-medium">
-                            Questões aparecerão aqui
+                            <Questao></Questao>
                         </div>
                     </section>
                 </main>
