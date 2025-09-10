@@ -43,6 +43,28 @@ export const CronogramaService = {
     }
   },
 
+
+  buscarCronogramaPorID: async (id: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cronogramas/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar os cronogramas: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      console.error("Erro ao buscar os cronogramas:", error);
+      throw error;
+    }
+  },
+
   atualizarCronograma: async (id: number, cronograma: any) => {
     try {
       const response = await fetch(`${process.env. NEXT_PUBLIC_API_URL}/cronogramas/${id}`, {

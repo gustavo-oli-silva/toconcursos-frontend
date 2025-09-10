@@ -6,39 +6,23 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, X, Calendar, Clock, BookOpen, Save, AlertCircle } from "lucide-react"
-import React from "react"
+import { Plus, Calendar, Clock, BookOpen, Save, AlertCircle } from "lucide-react"
 import { AppHeader } from "@/components/project/AppHeader"
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService"
 import { DisciplinaService } from "@/lib/services/disciplina/DisciplinaService"
 import type { EstudoDiario } from "@/types/cronograma/EstudoDiario"
 import { NovoEstudoDialog } from "@/components/project/dialogs/NovoEstudoDiarioDialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CalendarioSemanal } from "@/components/project/cronograma/CalendarioSemanal"
+import { EDiaDaSemana } from "@/types/cronograma/EDiaDaSemana"
+import { 
+  calculateCronogramaStatistics,
+  DIAS_SEMANA,
+  HORARIOS,
+  getNextHour,
+} from "@/components/project/cronograma/utils"
+import { useRouter } from "next/dist/client/components/navigation"
 
-enum EDiaDaSemana {
-  DOMINGO = "domingo",
-  SEGUNDA = "segunda",
-  TERCA = "terca",
-  QUARTA = "quarta",
-  QUINTA = "quinta",
-  SEXTA = "sexta",
-  SABADO = "sabado",
-}
-
-const DIAS_SEMANA = [
-  { key: EDiaDaSemana.DOMINGO, label: "DOM" },
-  { key: EDiaDaSemana.SEGUNDA, label: "SEG" },
-  { key: EDiaDaSemana.TERCA, label: "TER" },
-  { key: EDiaDaSemana.QUARTA, label: "QUA" },
-  { key: EDiaDaSemana.QUINTA, label: "QUI" },
-  { key: EDiaDaSemana.SEXTA, label: "SEX" },
-  { key: EDiaDaSemana.SABADO, label: "SÁB" },
-]
-
-// Horários de 1 em 1 hora para melhor granularidade
-const HORARIOS = Array.from({ length: 24 }, (_, i) => {
-  return `${i.toString().padStart(2, "0")}:00`
-})
 
 interface Option {
   id: number
@@ -57,6 +41,7 @@ export default function NewCronogramaScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
+  const router = useRouter();
   useEffect(() => {
     const loadDisciplinas = async () => {
       try {
@@ -89,45 +74,6 @@ export default function NewCronogramaScreen() {
     return newErrors.length === 0
   }
 
-  const getStatistics = () => {
-    const totalHoras = estudosDiarios.reduce((acc, estudo) => {
-      const [inicioHora, inicioMin] = estudo.hora_inicio.split(":").map(Number)
-      const [fimHora, fimMin] = estudo.hora_fim.split(":").map(Number)
-      const inicioMinutos = inicioHora * 60 + inicioMin
-      const fimMinutos = fimHora * 60 + fimMin
-      const duracaoMinutos = fimMinutos - inicioMinutos
-      return acc + duracaoMinutos
-    }, 0)
-
-    const disciplinasUnicas = new Set(estudosDiarios.map((e) => e.disciplina.id)).size
-
-    return {
-      totalHoras: Math.floor(totalHoras / 60),
-      totalMinutos: totalHoras % 60,
-      totalSessoes: estudosDiarios.length,
-      disciplinasUnicas,
-    }
-  }
-
-  const calculateBlockHeight = (horaInicio: string, horaFim: string) => {
-    const [inicioHora, inicioMin] = horaInicio.split(":").map(Number)
-    const [fimHora, fimMin] = horaFim.split(":").map(Number)
-    const inicioMinutos = inicioHora * 60 + inicioMin
-    const fimMinutos = fimHora * 60 + fimMin
-    const duracaoMinutos = fimMinutos - inicioMinutos
-    return Math.max(duracaoMinutos, 30)
-  }
-
-  const calculateBlockPosition = (horaInicio: string) => {
-    const [hora, min] = horaInicio.split(":").map(Number)
-    const minutosDoDia = hora * 60 + min
-    return minutosDoDia
-  }
-
-  const getEstudosForDay = (dia: EDiaDaSemana) => {
-    return estudosDiarios.filter((estudo) => estudo.dia_da_semana === dia)
-  }
-
   const handleAddEstudo = () => {
     if (novoEstudo.hora_inicio && novoEstudo.hora_fim && novoEstudo.dia_da_semana && novoEstudo.disciplina) {
       setEstudosDiarios((prev) => {
@@ -151,7 +97,7 @@ export default function NewCronogramaScreen() {
     setNovoEstudo({
       dia_da_semana: dia,
       hora_inicio: hora,
-      hora_fim: hora ? `${String(Number.parseInt(hora.split(":")[0]) + 1).padStart(2, "0")}:${hora.split(":")[1]}` : "",
+      hora_fim: hora ? getNextHour(hora) : "", 
     })
     setIsDialogOpen(true)
   }
@@ -181,6 +127,7 @@ export default function NewCronogramaScreen() {
       setCronogramaDescricao("")
       setEstudosDiarios([])
       setErrors([])
+      router.push("/cronogramas")
     } catch (error) {
       console.error("Erro ao salvar o cronograma:", error)
       setErrors(["Erro ao salvar cronograma. Tente novamente."])
@@ -189,7 +136,8 @@ export default function NewCronogramaScreen() {
     }
   }
 
-  const stats = getStatistics()
+  // Usar utilitário para calcular estatísticas
+  const stats = calculateCronogramaStatistics(estudosDiarios)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -212,212 +160,149 @@ export default function NewCronogramaScreen() {
             </div>
           </header>
 
-          <section className="grid gap-6 lg:grid-cols-3">
-            {/* Cronograma Info */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="p-6 bg-white/70 backdrop-blur-md border border-slate-200/50 shadow-xl">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BookOpen className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-xl font-semibold text-slate-800">Informações do Cronograma</h2>
+          <section className="grid gap-8 lg:grid-cols-12">
+            {/* Cronograma Info - Ocupa mais espaço */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Card Principal com Design Melhorado */}
+              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-xl border-0 shadow-2xl shadow-blue-500/10">
+                {/* Gradiente de fundo sutil */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white/80 to-indigo-50/50"></div>
+                
+                <div className="relative p-8">
+                  {/* Header do Card */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-lg">
+                        <BookOpen className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-800">Informações do Cronograma</h2>
+                        <p className="text-sm text-slate-600">Preencha os dados básicos do seu cronograma</p>
+                      </div>
+                    </div>
+                    
+                    {/* Badge de Status */}
+                    <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {estudosDiarios.length} {estudosDiarios.length === 1 ? 'estudo' : 'estudos'} adicionado{estudosDiarios.length !== 1 ? 's' : ''}
+                    </div>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="nome" className="text-sm font-medium text-slate-700">
-                        Nome do Cronograma *
+                  {/* Formulário */}
+                  <div className="space-y-6">
+                    {/* Nome do Cronograma - Layout melhorado */}
+                    <div className="space-y-3">
+                      <Label htmlFor="nome" className="text-base font-semibold text-slate-700 flex items-center gap-2">
+                        Nome do Cronograma
+                        <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="nome"
-                        placeholder="Ex: Cronograma de Estudos - Semestre 2024"
+                        placeholder="Ex: Cronograma ENEM 2024 - Preparação Intensiva"
                         value={cronogramaNome}
                         onChange={(e) => setCronogramaNome(e.target.value)}
-                        className="bg-white/80 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20"
+                        className="h-10 p-2 w-full bg-white/90 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-md text-base shadow-sm transition-all duration-200"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="descricao" className="text-sm font-medium text-slate-700">
-                        Descrição *
+                    {/* Descrição - Layout melhorado */}
+                    <div className="space-y-3">
+                      <Label htmlFor="descricao" className="text-base font-semibold text-slate-700 flex items-center gap-2">
+                        Descrição
+                        <span className="text-red-500">*</span>
                       </Label>
                       <Textarea
                         id="descricao"
-                        placeholder="Descreva o objetivo deste cronograma..."
+                        placeholder="Descreva o objetivo deste cronograma, disciplinas principais e metas de estudo..."
                         value={cronogramaDescricao}
                         onChange={(e) => setCronogramaDescricao(e.target.value)}
-                        className="bg-white/80 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 min-h-[80px]"
+                        className="min-h-[100px] bg-white/90 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl text-base shadow-sm transition-all duration-200 resize-none"
                       />
                     </div>
                   </div>
                 </div>
               </Card>
 
+              {/* Alertas de Erro com Design Melhorado */}
               {errors.length > 0 && (
-                <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-700">
-                    <ul className="list-disc list-inside space-y-1">
-                      {errors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
+                <Alert className="border-0 bg-red-50/80 backdrop-blur-sm rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="p-1 bg-red-100 rounded-lg">
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-red-800 mb-2">Corrija os seguintes erros:</h4>
+                      <AlertDescription className="text-red-700">
+                        <ul className="space-y-1">
+                          {errors.map((error, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></span>
+                              <span>{error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </AlertDescription>
+                    </div>
+                  </div>
                 </Alert>
               )}
             </div>
 
-            <div className="space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 shadow-lg">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-semibold text-slate-800">Estatísticas</h3>
-                  </div>
+            {/* Painel Lateral - Design Completamente Reformulado */}
+            <div className="lg:col-span-4 space-y-6">
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-white/60 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {stats.totalHoras}h {stats.totalMinutos}m
-                      </div>
-                      <div className="text-xs text-slate-600">Total Semanal</div>
+              {/* Card de Ações */}
+              <Card className="bg-white/90 backdrop-blur-sm border-0">
+                <div className="p-6 space-y-4">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Ações Rápidas</h3>
+                  
+                  {/* Botão Adicionar Estudo */}
+                  <Button
+                    onClick={() => openDialog()}
+                    className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Adicionar Estudo
+                  </Button>
+
+                  {/* Botão Salvar */}
+                  <Button
+                    onClick={handleSalvarCronograma}
+                    disabled={isLoading || estudosDiarios.length === 0}
+                    className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 disabled:from-slate-300 disabled:to-slate-400 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:transform-none disabled:shadow-sm"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Salvando Cronograma...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5 mr-2" />
+                        Salvar Cronograma
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Dica */}
+                  {estudosDiarios.length === 0 && (
+                    <div className="p-4 text-sm text-slate-700 bg-yellow-50 rounded-xl border border-yellow-200">
+                      <strong>Dica:</strong> Adicione estudos diários para visualizar seu cronograma semanal.
                     </div>
-                    <div className="text-center p-3 bg-white/60 rounded-lg">
-                      <div className="text-2xl font-bold text-indigo-600">{stats.totalSessoes}</div>
-                      <div className="text-xs text-slate-600">Sessões</div>
-                    </div>
-                    <div className="text-center p-3 bg-white/60 rounded-lg col-span-2">
-                      <div className="text-2xl font-bold text-purple-600">{stats.disciplinasUnicas}</div>
-                      <div className="text-xs text-slate-600">Disciplinas Diferentes</div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </Card>
-
-              <div className="space-y-3">
-                <Button
-                  onClick={() => openDialog()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Estudo
-                </Button>
-
-                <Button
-                  onClick={handleSalvarCronograma}
-                  disabled={isLoading || estudosDiarios.length === 0}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Cronograma
-                    </>
-                  )}
-                </Button>
-              </div>
             </div>
           </section>
 
-          {/* Calendário semanal */}
-          <section className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl shadow-xl shadow-slate-500/10 p-8 md:p-10">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-slate-50/30"></div>
-            <div className="relative">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-800">Calendário Semanal</h2>
-                <p className="text-slate-600">Clique em qualquer horário para adicionar um estudo</p>
-              </div>
-
-              <div className="grid grid-cols-8 gap-1 bg-white/50 border border-slate-200/40 rounded-2xl overflow-hidden">
-                {/* Header com dias da semana */}
-                <div className="bg-gradient-to-br from-slate-100 to-slate-200 p-3 text-center font-medium text-slate-600">
-                  Horário
-                </div>
-                {DIAS_SEMANA.map((dia) => (
-                  <div
-                    key={dia.key}
-                    className="bg-gradient-to-br from-slate-100 to-slate-200 p-3 text-center font-medium text-slate-600"
-                  >
-                    {dia.label}
-                  </div>
-                ))}
-
-                {/* Grid de horários */}
-                {HORARIOS.map((horario) => {
-                  return (
-                    <React.Fragment key={`horario-${horario}`}>
-                      {/* Coluna de horários */}
-                      <div
-                        key={`time-${horario}`}
-                        className="bg-slate-50 p-2 text-sm text-slate-600 text-center border-r border-slate-200/60 font-medium"
-                      >
-                        {horario}
-                      </div>
-                      {/* Colunas dos dias */}
-                      {DIAS_SEMANA.map((dia) => {
-                        const estudosNoDia = getEstudosForDay(dia.key)
-                        return (
-                          <div
-                            key={`${dia.key}-${horario}`}
-                            className="relative bg-white/80 border-r border-b border-slate-200/40 min-h-[60px] cursor-pointer hover:bg-blue-50/60 transition-all duration-200 group"
-                            onClick={() => openDialog(dia.key, horario)}
-                          >
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-blue-100/30 rounded-sm flex items-center justify-center">
-                              <Plus className="h-4 w-4 text-blue-600" />
-                            </div>
-
-                            {/* Renderizar blocos de estudo */}
-                            {estudosNoDia.map((estudo, index) => {
-                              const blockHeight = calculateBlockHeight(estudo.hora_inicio, estudo.hora_fim)
-                              const blockPosition = calculateBlockPosition(estudo.hora_inicio)
-                              const currentTimePosition = calculateBlockPosition(horario)
-                              if (Math.abs(blockPosition - currentTimePosition) < 30) {
-                                return (
-                                  <Card
-                                    key={index}
-                                    className="absolute inset-x-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-2 rounded-xl shadow-lg z-10 group/card border-0 hover:from-blue-600 hover:to-indigo-600 transition-all duration-200"
-                                    style={{
-                                      height: `${blockHeight}px`,
-                                      top: `${blockPosition - currentTimePosition}px`,
-                                    }}
-                                  >
-                                    <div className="flex justify-between items-start">
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-medium truncate">{estudo.disciplina.label}</p>
-                                        <p className="text-xs opacity-90">
-                                          {estudo.hora_inicio} - {estudo.hora_fim}
-                                        </p>
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-4 w-4 p-0 opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-white/20 text-white"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleRemoveEstudo(estudosDiarios.indexOf(estudo))
-                                        }}
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  </Card>
-                                )
-                              }
-                              return null
-                            })}
-                          </div>
-                        )
-                      })}
-                    </React.Fragment>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
+      
+          <CalendarioSemanal
+            estudosDiarios={estudosDiarios}
+            openDialog={openDialog}
+            handleRemoveEstudo={handleRemoveEstudo}
+            DIAS_SEMANA={DIAS_SEMANA}
+            HORARIOS={HORARIOS}
+            modo="criar"
+          />
         </main>
       </div>
 
