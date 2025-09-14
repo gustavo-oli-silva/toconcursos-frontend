@@ -22,6 +22,7 @@ import {
   getNextHour,
 } from "@/components/project/cronograma/utils"
 import { useRouter } from "next/dist/client/components/navigation"
+import { ToastService } from "@/lib/services/toast/ToastService"
 
 
 interface Option {
@@ -128,9 +129,11 @@ export default function NewCronogramaScreen() {
       setEstudosDiarios([])
       setErrors([])
       router.push("/cronogramas")
+      ToastService.success("Cronograma salvo com sucesso!")
     } catch (error) {
       console.error("Erro ao salvar o cronograma:", error)
       setErrors(["Erro ao salvar cronograma. Tente novamente."])
+      ToastService.error("Erro ao salvar cronograma. Tente novamente.")
     } finally {
       setIsLoading(false)
     }

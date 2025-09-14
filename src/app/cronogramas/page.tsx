@@ -4,26 +4,28 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, Clock, BookOpen } from "lucide-react";
+import { Plus, Calendar, Clock, BookOpen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/project/AppHeader";
 import { Cronograma } from "@/types/cronograma/Cronograma";
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService";
+import { DialogGenerico } from "@/components/project/dialogs/DialogGenerico";
+import { ToastService } from "@/lib/services/toast/ToastService";
 
 export default function CronogramasPage() {
   const [cronogramas, setCronogramas] = useState<Cronograma[]>([]);
   const router = useRouter();
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedCronogramaId, setSelectedCronogramaId] = useState<number | null>(null);
+  const loadCronogramas = async () => {
+    try {
+      const cronogramasDoBackend = await CronogramaService.buscarCronogramas();
+      setCronogramas(cronogramasDoBackend.data || []);
+    } catch (error) {
+      console.error("Erro ao carregar cronogramas:", error);
+    }
+  };
   useEffect(() => {
-    const loadCronogramas = async () => {
-      try {
-        const cronogramasDoBackend = await CronogramaService.buscarCronogramas();
-        setCronogramas(cronogramasDoBackend.data || []);
-      } catch (error) {
-        console.error("Erro ao carregar cronogramas:", error);
-      }
-    };
-
     loadCronogramas();
   }, []);
 
@@ -53,6 +55,19 @@ export default function CronogramasPage() {
 
   const handleCronogramaClick = (cronogramaId: number) => {
     router.push(`/cronogramas/${cronogramaId}`);
+  };
+
+  const deletarCronograma = async (cronogramaId: number) => {
+    try {
+      await CronogramaService.deletarCronograma(cronogramaId);
+      loadCronogramas();
+      setIsDialogOpen(false);
+      ToastService.success("Cronograma deletado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao deletar cronograma:", error);
+      setIsDialogOpen(false);
+      ToastService.error("Erro ao deletar cronograma. Tente novamente.");
+    }
   };
 
   return (
@@ -114,9 +129,23 @@ export default function CronogramasPage() {
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-xl font-bold text-slate-800 mb-2 line-clamp-1">
-                            {cronograma.nome}
-                          </CardTitle>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-xl font-bold text-slate-800 mb-2 line-clamp-1">
+                              {cronograma.nome}
+                            </CardTitle>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 p-1 hover:bg-slate-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCronogramaId(cronograma.id); // Define o ID selecionado
+                                setIsDialogOpen(true); // Abre o dialog
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
                           <CardDescription className="text-slate-600 line-clamp-2">
                             {cronograma.descricao}
                           </CardDescription>
@@ -164,6 +193,7 @@ export default function CronogramasPage() {
                         <p className="text-xs text-slate-500">
                           Criado em {new Date(cronograma.data_criacao).toLocaleDateString("pt-BR")}
                         </p>
+
                       </div>
                     </CardContent>
                   </Card>
@@ -173,6 +203,26 @@ export default function CronogramasPage() {
           </section>
         </main>
       </div>
+
+      {/* Adicione o DialogGenerico no final do return, antes do fechamento da div principal */}
+      <DialogGenerico
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title="Confirmar exclusão"
+        description="Tem certeza de que deseja excluir este cronograma? Esta ação não pode ser desfeita."
+        icon={<Trash2 className="h-8 w-8 text-red-500" />}
+        children={<p>Excluindo o cronograma "{cronogramas.find(c => c.id === selectedCronogramaId)?.nome}".</p>}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          if (selectedCronogramaId) {
+            deletarCronograma(selectedCronogramaId);
+          }
+        }}
+        onCancel={() => {
+          setSelectedCronogramaId(null); // Limpa o ID selecionado
+        }}
+      />
     </div>
   );
 }
