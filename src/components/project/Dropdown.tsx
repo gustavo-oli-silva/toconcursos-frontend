@@ -58,11 +58,11 @@ export function Dropdown({
 
                 {options.map((item) => (
                     <DropdownMenuItem
-                        key={item.value}
+                        key={item.id}
                         onClick={() => {
                             onOptionSelect(item)
                         }}
-                        className={`mx-1 px-3 py-2 flex justify-center transition-all duration-150 hover:bg-blue-50 text-slate-600 hover:text-blue-700 rounded-md cursor-pointer ${selectedOption?.value === item.value ? "bg-blue-100 text-blue-800 font-medium" : ""
+                        className={`mx-1 px-3 py-2 flex justify-center transition-all duration-150 hover:bg-blue-50 text-slate-600 hover:text-blue-700 rounded-md cursor-pointer ${selectedOption?.id === item.id ? "bg-blue-100 text-blue-800 font-medium" : ""
                             }`}
                     >
                         {item.label}
