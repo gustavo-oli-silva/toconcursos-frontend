@@ -3,13 +3,16 @@ import { Label } from "../ui/label"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Badge } from "../ui/badge"
 import { IQuestao } from "@/types/questao/IQuestao"
-import ListaComentarios from "./comentario/ListaComentarios"
+import { useState } from "react";
+import ListaComentarios from "./comentario/ListaComentarios";
+import FormComentario from "./comentario/FormComentario";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { MessageCircle } from "lucide-react"
 
 interface QuestaoProps {
     questao: IQuestao;
@@ -24,10 +27,23 @@ export function Questao({
     alternativaSelecionada,
     mostrarComentarios = true 
 }: QuestaoProps) {
+    const [comentarios, setComentarios] = useState(questao.comentarios || []);
+
+    const handleComentarioAdicionado = (novoComentario: any) => {
+   
+        setComentarios(prev => {
+            const novaLista = [...prev, novoComentario];
+            // Adicione este log para ver a lista completa antes de renderizar
+            return novaLista;
+        });
+    };
+
     const handleAlternativaChange = (value: string) => {
         const alternativaId = parseInt(value);
         onAlternativaSelect?.(alternativaId);
     };
+
+  
 
     return (
         <article className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 rounded-2xl shadow-xl border border-slate-200/50">
@@ -134,21 +150,40 @@ export function Questao({
             </Card>
 
             {/* Seção de Comentários */}
-            {mostrarComentarios && questao.comentarios && questao.comentarios.length > 0 && (
-                <section className="mt-6" aria-labelledby="comentarios-titulo">
-                    <Accordion type="single" collapsible className="w-full" >
-                        <AccordionItem value="comentarios">
-                            <AccordionTrigger className="w-full bg-white/80 backdrop-blur-sm rounded-t-xl border border-slate-200/60 shadow-sm px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-purple-50/70 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Comentários ({questao.comentarios.length})
-                            </AccordionTrigger>
-                            <AccordionContent className="border border-t-0 border-slate-200/60 rounded-b-xl bg-white/80 backdrop-blur-sm shadow-sm p-4">
-                                <ListaComentarios 
-                                    questao={questao} 
-                                    comentarios={questao.comentarios} 
-                                />
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+           {mostrarComentarios && (
+                <section className="mt-8" aria-labelledby="comentarios-titulo">
+                    <Card className="bg-white/90 backdrop-blur-sm border border-slate-200/60 shadow-lg rounded-xl overflow-hidden">
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="comentarios" className="border-none">
+                                <AccordionTrigger className="w-full bg-gradient-to-r from-slate-50 to-blue-50/30 px-6 py-4 text-left hover:bg-gradient-to-r hover:from-slate-100 hover:to-blue-50/50 transition-all duration-200 border-b border-slate-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 rounded-full">
+                                            <MessageCircle className="h-4 w-4 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-slate-800">
+                                                Comentários ({comentarios.length})
+                                            </h3>
+                                            <p className="text-xs text-slate-500">
+                                                Participe da discussão sobre esta questão
+                                            </p>
+                                        </div>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="p-6 bg-white">
+                                    <div className="space-y-6">
+                                        <ListaComentarios comentarios={comentarios} />
+                                        <div className="border-t pt-4">
+                                            <FormComentario 
+                                                questaoId={questao.id}
+                                                onComentarioAdicionado={handleComentarioAdicionado}
+                                            />
+                                        </div>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </Card>
                 </section>
             )}
         </article>
