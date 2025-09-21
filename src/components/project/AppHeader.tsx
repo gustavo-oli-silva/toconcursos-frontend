@@ -8,7 +8,7 @@ export function AppHeader() {
                     </h1>
                     <ul className="hidden md:flex items-center gap-1 lg:gap-2">
                         <li>
-                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700  hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
                                 Início
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
                             </span>
@@ -27,19 +27,26 @@ export function AppHeader() {
                         </li>
                         <li>
                             <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
-                                Simulados
+                                Planos
+                                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
+                            </span>
+                        </li>
+                       <li>
+                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                                Contato
+                                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
+                            </span>
+                        </li>
+                         <li>
+                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                                Login
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
                             </span>
                         </li>
                         <li>
                             <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
-                                Planos
+                                Cadastro
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
-                            </span>
-                        </li>
-                        <li>
-                            <span className="ml-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-[1.02]">
-                                Contato
                             </span>
                         </li>
                     </ul>
