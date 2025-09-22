@@ -16,15 +16,16 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { AuthService } from "@/lib/services/auth/AuthService"
 import { useRouter } from "next/dist/client/components/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function LoginForm() {
    const [showPassword, setShowPassword] = useState(false)
    const router = useRouter();
-
+  const { login } = useAuth();
   const formSchema = z
     .object({
       email: z.string().email("Por favor, insira um e-mail válido."),
-      senha: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
+      senha: z.string(),
     })
 
 
@@ -36,12 +37,11 @@ export function LoginForm() {
     },
   })
   async function onSubmit(values: z.infer<typeof formSchema>) {
-
     const { ...dadosParaApi } = values
     console.log(dadosParaApi)
     try {
       const user = dadosParaApi
-      await AuthService.login(user)
+      await login(user)
       toast.success("Bem vindo concurseiro!")
       router.push("/questoes")
       form.reset();
