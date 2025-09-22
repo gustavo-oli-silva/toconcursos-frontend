@@ -6,7 +6,6 @@ import { MessageCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {ComentarioService} from "@/lib/services/comentario/ComentarioService";
 import { toast } from "sonner";
 interface ListaComentariosProps {
     comentarios: Comentario[];

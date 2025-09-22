@@ -1,9 +1,10 @@
 import { Card, CardAction, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ComentarioService } from "@/lib/services/comentario/ComentarioService";
+
 import { toast } from "sonner";
 import { useRef } from "react";
+import { ComentarioService } from "@/lib/services/comentario/ComentarioService";
 
 interface FormComentarioProps {
     questaoId: number;
