@@ -178,7 +178,7 @@ export default function QuestoesScreen() {
             </div> */}
             {questoes.map((questao) => (
               <React.Fragment key={questao.id}>
-                <Questao questao={questao} />
+                <Questao questao={questao}  />
                 <Separator className="my-10" />
               </React.Fragment>
             ))}

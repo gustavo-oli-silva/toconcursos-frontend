@@ -7,30 +7,30 @@ import { useState } from "react";
 import ListaComentarios from "./comentario/ListaComentarios";
 import FormComentario from "./comentario/FormComentario";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion"
 import { MessageCircle } from "lucide-react"
+import { Button } from "../ui/button"
+import { toast } from "sonner"
 
 interface QuestaoProps {
     questao: IQuestao;
     onAlternativaSelect?: (alternativaId: number) => void;
-    alternativaSelecionada?: number;
     mostrarComentarios?: boolean;
 }
 
-export function Questao({ 
-    questao, 
-    onAlternativaSelect, 
-    alternativaSelecionada,
-    mostrarComentarios = true 
+export function Questao({
+    questao,
+    onAlternativaSelect,
+    mostrarComentarios = true
 }: QuestaoProps) {
     const [comentarios, setComentarios] = useState(questao.comentarios || []);
-
+    const [respostaSelecionada, setRespostaSelecionada] = useState<string | null>(null);
     const handleComentarioAdicionado = (novoComentario: any) => {
-   
+
         setComentarios(prev => {
             const novaLista = [...prev, novoComentario];
             // Adicione este log para ver a lista completa antes de renderizar
@@ -43,7 +43,33 @@ export function Questao({
         onAlternativaSelect?.(alternativaId);
     };
 
-  
+
+
+   function handleSubmit(respostaSelecionada: string | null): void {
+  if (!respostaSelecionada) {
+    alert("Selecione uma alternativa!");
+    return;
+  }
+
+  const alternativaSelecionada = questao.alternativas.find(
+    (alt) => alt.id === parseInt(respostaSelecionada)
+  );
+
+  if (!alternativaSelecionada) {
+    alert("Erro: alternativa não encontrada.");
+    return;
+  }
+
+  if (alternativaSelecionada.is_correta) {
+    toast.success("Resposta correta! 🎉");
+  } else {
+    toast.error("Resposta incorreta.");
+  }
+
+  // aqui em vez de mutar questao, você poderia usar um estado
+  // exemplo: setQuestoes(prev => prev.map(q => q.id === questao.id ? {...q, ja_respondeu: true} : q));
+}
+
 
     return (
         <article className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 rounded-2xl shadow-xl border border-slate-200/50">
@@ -60,9 +86,9 @@ export function Questao({
                         <Badge variant="outline" className="text-xs">
                             {questao.instituicao.label}
                         </Badge>
-                        <Badge 
-                            variant={questao.dificuldade === 'Fácil' ? 'default' : 
-                                   questao.dificuldade === 'Médio' ? 'secondary' : 'destructive'}
+                        <Badge
+                            variant={questao.dificuldade === 'Fácil' ? 'default' :
+                                questao.dificuldade === 'Médio' ? 'secondary' : 'destructive'}
                             className="text-xs"
                         >
                             {questao.dificuldade}
@@ -72,13 +98,13 @@ export function Questao({
                         </Badge>
                     </div>
 
-                    <CardTitle 
+                    <CardTitle
                         className="text-xl md:text-2xl font-bold text-slate-800 leading-tight text-center"
                         id={`questao-${questao.id}-titulo`}
                     >
                         {questao.enunciado}
                     </CardTitle>
-                    
+
                     <CardDescription className="text-base md:text-lg text-slate-600 leading-relaxed text-center">
                         Analise as alternativas abaixo e selecione a resposta correta.
                     </CardDescription>
@@ -89,54 +115,42 @@ export function Questao({
                         <legend className="sr-only">
                             Alternativas para a questão {questao.id}
                         </legend>
-                        
-                        <RadioGroup 
-                            value={alternativaSelecionada?.toString()} 
-                            onValueChange={handleAlternativaChange}
+
+                        <RadioGroup
                             className="space-y-3"
-                            disabled={questao.ja_respondeu}
-                            aria-describedby={`questao-${questao.id}-titulo`}
+                            value={respostaSelecionada}
+                            onValueChange={(value) => setRespostaSelecionada(value)} 
                         >
-                            {questao.alternativas.map((alternativa, index) => (
-                                <div 
-                                    key={alternativa.id}
-                                    className={`flex items-center space-x-4 p-4 rounded-lg border border-slate-200 bg-white hover:bg-purple-50/70 hover:border-slate-300 active:scale-[0.98] transition-all duration-150 ease-out cursor-pointer group ${
-                                        questao.ja_respondeu && alternativa.is_correta 
-                                            ? 'bg-green-50/70 border-green-300' 
-                                            : ''
-                                    } ${
-                                        questao.ja_respondeu && 
-                                        alternativaSelecionada === alternativa.id && 
-                                        !alternativa.is_correta 
-                                            ? 'bg-red-50/70 border-red-300' 
-                                            : ''
-                                    }`}
-                                >
+                            {questao.alternativas.map((alternativa) => (
+                                <div key={alternativa.id} className="flex items-center space-x-2">
                                     <RadioGroupItem
-                                        value={alternativa.id.toString()}
-                                        id={`alternativa-${alternativa.id}`}
-                                        className="border-slate-400 text-blue-600 group-hover:border-blue-500"
-                                        aria-describedby={`alternativa-${alternativa.id}-descricao`}
+                                        value={String(alternativa.id)}
+                                        id={`alternativa-${questao.id}-${alternativa.id}`}
+                                        disabled={questao.ja_respondeu} // bloqueia se já respondeu
+                                         className="border-slate-400 text-blue-600 group-hover:border-blue-500"
                                     />
                                     <Label
-                                        htmlFor={`alternativa-${alternativa.id}`}
-                                        id={`alternativa-${alternativa.id}-descricao`}
-                                        className="text-sm md:text-base font-medium text-slate-700 flex-1 cursor-pointer leading-relaxed"
+                                        htmlFor={`alternativa-${questao.id}-${alternativa.id}`}
+                                        className={
+                                            questao.ja_respondeu && alternativa.is_correta
+                                                ? "text-green-600 font-medium"
+                                                : "text-sm md:text-base font-medium text-slate-700 flex-1 cursor-pointer leading-relaxed"
+                                        }
                                     >
-                                        <span className="font-semibold mr-2">
-                                            {String.fromCharCode(65 + index)})
-                                        </span>
                                         {alternativa.descricao}
-                                        {questao.ja_respondeu && alternativa.is_correta && (
-                                            <span className="ml-2 text-green-600 font-semibold">
-                                                ✓ Resposta correta
-                                            </span>
-                                        )}
                                     </Label>
                                 </div>
                             ))}
                         </RadioGroup>
+
                     </fieldset>
+                    <Button
+                        onClick={() => handleSubmit(respostaSelecionada)}
+                        className="mt-6 w-full"
+                        disabled={questao.ja_respondeu} // desabilita se já respondeu
+                    >
+                        Responder
+                    </Button>
 
                     {/* Feedback após responder */}
                     {questao.ja_respondeu && (
@@ -150,7 +164,7 @@ export function Questao({
             </Card>
 
             {/* Seção de Comentários */}
-           {mostrarComentarios && (
+            {mostrarComentarios && (
                 <section className="mt-8" aria-labelledby="comentarios-titulo">
                     <Card className="bg-white/90 backdrop-blur-sm border border-slate-200/60 shadow-lg rounded-xl overflow-hidden">
                         <Accordion type="single" collapsible className="w-full">
@@ -174,7 +188,7 @@ export function Questao({
                                     <div className="space-y-6">
                                         <ListaComentarios comentarios={comentarios} />
                                         <div className="border-t pt-4">
-                                            <FormComentario 
+                                            <FormComentario
                                                 questaoId={questao.id}
                                                 onComentarioAdicionado={handleComentarioAdicionado}
                                             />

@@ -13,10 +13,11 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function AppHeader() {
     const { user, loading, logout } = useAuth()
-
+    const router = useRouter()
     const getUserInitials = (nome: string) => {
         return nome
             .split(" ")
@@ -63,7 +64,7 @@ export function AppHeader() {
                             </span>
                         </li>
                         <li>
-                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                            <span onClick={() => router.push("/questoes")} className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
                                 Questões
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
                             </span>
@@ -81,8 +82,8 @@ export function AppHeader() {
                             </span>
                         </li>
                         <li>
-                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
-                                Contato
+                            <span onClick={() => router.push("/cronogramas")} className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                                Cronogramas
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
                             </span>
                         </li>
