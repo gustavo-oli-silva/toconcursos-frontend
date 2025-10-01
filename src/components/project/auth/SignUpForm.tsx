@@ -13,12 +13,14 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { toast } from "sonner"
 import { AuthService } from "@/lib/services/auth/AuthService"
 import { useRouter } from "next/dist/client/components/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter();
+  const login = useAuth().login;
 
   // zod validator
   const formSchema = z
@@ -66,7 +68,7 @@ export function SignupForm() {
       const user = dadosParaApi
       await AuthService.signUp(user)
       // toast.success("Usuário criado com sucesso!")
-      await AuthService.login({ email: user.email, senha: user.senha })
+      await login({ email: user.email, senha: user.senha })
       toast.success("Bem vindo concurseiro!")
       router.push("/questoes")
       form.reset()

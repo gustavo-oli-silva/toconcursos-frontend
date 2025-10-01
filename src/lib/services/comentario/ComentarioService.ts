@@ -1,6 +1,6 @@
 import { Comentario } from "@/types/questao/Comentario";
 import axios from 'axios'; 
-
+import Cookies from "js-cookie"
 
 interface CreateComentarioPayload {
   comentario: string;
@@ -8,8 +8,7 @@ interface CreateComentarioPayload {
 }
 
 export const ComentarioService = {
-  async criarComentario(comentario: CreateComentarioPayload, usuarioToken: string): Promise<Comentario> {
-    usuarioToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJzdHJpbmciLCJleHAiOjE3NTgxMTgxNjl9.txN6g9sjJit5yGrhcQshCxsAkSNWRsElLtMGZkPgRzE'
+  async criarComentario(comentario: CreateComentarioPayload): Promise<Comentario> {
     try {
       const respostaAxios = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/comentarios/`,
@@ -17,13 +16,13 @@ export const ComentarioService = {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${usuarioToken}`
+            Authorization: `Bearer ${Cookies.get('auth_token')}`
           }
         }
       );
 
       return respostaAxios.data.data;
-
+      
     } catch (error) {
       console.error("Erro ao criar comentário no serviço:", error);
       throw error;
