@@ -7,9 +7,6 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import { Check, CreditCard, Lock } from "lucide-react"
-import App from "next/app"
-import { AppHeader } from "@/components/project/AppHeader"
-import { Footer } from "@/components/project/landing_page/Footer"
 
 export default function PagamentoPage() {
     const [activeTab, setActiveTab] = useState("cartao")
@@ -44,7 +41,6 @@ export default function PagamentoPage() {
 
     return (
         <div>
-            <AppHeader />
             <div className="bg-[#f5f5f7]">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -291,7 +287,6 @@ export default function PagamentoPage() {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     )
 }

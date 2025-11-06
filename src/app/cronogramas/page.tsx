@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Plus, Calendar, Clock, BookOpen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AppHeader } from "@/components/project/AppHeader";
 import { Cronograma } from "@/types/cronograma/Cronograma";
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService";
 import { DialogGenerico } from "@/components/project/dialogs/DialogGenerico";
@@ -72,7 +71,6 @@ export default function CronogramasPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <AppHeader />
       <div className="px-4 py-8 md:px-6 md:py-12 lg:px-8">
         <main className="max-w-7xl mx-auto space-y-10">
           {/* Header */}

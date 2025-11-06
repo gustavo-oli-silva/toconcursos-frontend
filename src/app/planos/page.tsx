@@ -1,8 +1,6 @@
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { AppHeader } from "@/components/project/AppHeader"
-import { Footer } from "@/components/project/landing_page/Footer"
 
 export default function PlanosPage() {
     const plans = [
@@ -54,7 +52,6 @@ export default function PlanosPage() {
 
     return (
         <div>
-            <AppHeader />
             <div className="bg-[#f5f5f7] px-6 py-8">
                 <div className="mx-auto max-w-[1200px]">
                     <div className="mb-8 border-l-[3px] border-l-indigo-600 pl-3">
@@ -97,7 +94,6 @@ export default function PlanosPage() {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     )
 }
