@@ -28,5 +28,32 @@ export const PerfilService = {
         Authorization: `Bearer ${token}`,
       },
     });
+  },
+
+  async uploadAvatar(file: File): Promise<string> {
+    const token = Cookies.get("auth_token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axios.post<{ avatarUrl: string }>(
+      `${process.env.NEXT_PUBLIC_API_URL}/perfil/me/avatar`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data.avatarUrl;
+  },
+
+  async deleteAvatar(): Promise<void> {
+    const token = Cookies.get("auth_token");
+    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/perfil/me/avatar`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   }
 };

@@ -15,6 +15,7 @@ interface AuthContextType {
   loading: boolean;
   logout: () => void;
   login: (credentials: Login) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 
@@ -66,6 +67,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
     
+  const refreshUser = async () => {
+    try {
+      const userLogged = await AuthService.profile();
+      setUser(userLogged);
+    } catch (error) {
+      console.error("Erro ao atualizar dados do usuário:", error);
+    }
+  };
+    
   const logout = async () => {
     await AuthService.logout();
     setUser(null);
@@ -73,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
-  const value = { user, loading, logout, login};
+  const value = { user, loading, logout, login, refreshUser};
 
   return (
     <AuthContext.Provider value={value}>
