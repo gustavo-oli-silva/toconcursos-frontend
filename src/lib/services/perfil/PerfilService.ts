@@ -1,3 +1,4 @@
+import { Graficos } from '@/types/graficos/Graficos';
 import { PerfilUsuario } from '@/types/usuario/perfil/Perfil';
 import axios from 'axios'; 
 import Cookies from "js-cookie"
@@ -55,5 +56,18 @@ export const PerfilService = {
         Authorization: `Bearer ${token}`,
       },
     });
+  },
+
+  async getEstatisticas(): Promise<Graficos> {
+    const token = Cookies.get("auth_token");
+    const response = await axios.get<Graficos>(
+      `${process.env.NEXT_PUBLIC_API_URL}/perfil/me/estatisticas/graficos`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   }
 };
