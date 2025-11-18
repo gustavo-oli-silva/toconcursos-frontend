@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card"
 import EstatisticasUsuario from "@/types/usuario/perfil/Estatisticas"
 import { useRouter } from "next/navigation"
+import { ArrowRight } from "lucide-react"
 interface ProfileStatsProps {
   stats: EstatisticasUsuario
 }
@@ -11,9 +12,15 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
   const router = useRouter()
   return (
     <Card className="border-l-4 border-l-primary p-6 bg-card">
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-bold text-foreground">Suas estatísticas</h3>
-        <p className="text-sm text-muted-foreground cursor-pointer" onClick={() => {router.push("perfil/estatisticas")}}>Ver analise detalhada</p>
+        <button
+          onClick={() => {router.push("perfil/estatisticas")}}
+          className="group flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/20"
+        >
+          <span>Ver análise detalhada</span>
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
