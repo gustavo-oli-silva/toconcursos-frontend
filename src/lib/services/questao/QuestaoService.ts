@@ -2,6 +2,7 @@ import { Filtro } from '@/types/questao/Filtro';
 import { ApiFetch } from '../ApiFetch';
 import axios from 'axios';
 import { IQuestao } from '@/types/questao/IQuestao';
+import { IGeminiResposta } from '@/types/questao/IGeminiResposta';
 import Cookies from "js-cookie"
 
 
@@ -21,6 +22,11 @@ interface FiltroPayload {
   id_instituicao?: number;
   skip?: number;
   limit?: number;
+}
+
+interface ResolucaoQuestaoPayload {
+  questao_id: number;
+  is_certa: boolean;
 }
 
 
@@ -95,6 +101,20 @@ export const QuestaoService = {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${Cookies.get('auth_token')}`
+        }
+      }
+    );
+    return response.data.data;
+  },
+
+  async getGeminiResposta(questaoId: number): Promise<IGeminiResposta> {
+    const token = Cookies.get('auth_token');
+    const response = await axios.get<ApiResponse<IGeminiResposta>>(
+      `${process.env.NEXT_PUBLIC_API_URL}/questaos/${questaoId}/gemini-resposta`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : undefined
         }
       }
     );

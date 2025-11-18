@@ -10,7 +10,7 @@ interface ResolucaoQuestaoPayload {
 import { useState } from "react";
 import ListaComentarios from "./comentario/ListaComentarios";
 import FormComentario from "./comentario/FormComentario";
-import { MessageCircle, Save, CheckCircle2, XCircle, Loader2, Scissors } from "lucide-react"
+import { MessageCircle, Save, CheckCircle2, XCircle, Loader2, Scissors, Sparkles } from "lucide-react"
 import { Button } from "../ui/button"
 import { toast } from "sonner"
 import { Separator } from "../ui/separator"
@@ -21,6 +21,8 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { QuestaoService } from "@/lib/services/questao/QuestaoService"
+import { IGeminiResposta } from "@/types/questao/IGeminiResposta"
+import { MarkdownRenderer } from "./MarkdownRenderer"
 
 interface QuestaoProps {
     questao: IQuestao;
@@ -41,6 +43,9 @@ export function Questao({
     const [alternativaEscolhidaId, setAlternativaEscolhidaId] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [alternativasEliminadas, setAlternativasEliminadas] = useState<Set<number>>(new Set());
+    const [geminiResposta, setGeminiResposta] = useState<IGeminiResposta | null>(null);
+    const [isLoadingGemini, setIsLoadingGemini] = useState(false);
+    const [explicacaoAberta, setExplicacaoAberta] = useState<string | undefined>(undefined);
     
     const handleComentarioAdicionado = (novoComentario: any) => {
         setComentarios(prev => {
@@ -115,6 +120,20 @@ export function Questao({
             toast.error("Erro ao enviar resposta. Tente novamente.");
         } finally {
             setIsSubmitting(false);
+        }
+    }
+
+    async function handleBuscarExplicacaoIA(): Promise<void> {
+        setIsLoadingGemini(true);
+        try {
+            const resposta = await QuestaoService.getGeminiResposta(questao.id);
+            setGeminiResposta(resposta);
+            setExplicacaoAberta("explicacao-ia");
+        } catch (error) {
+            console.error("Erro ao buscar explicação da IA:", error);
+            toast.error("Erro ao buscar explicação da IA. Tente novamente.");
+        } finally {
+            setIsLoadingGemini(false);
         }
     }
 
@@ -334,9 +353,9 @@ export function Questao({
                         </RadioGroup>
                     </fieldset>
 
-                    {/* Botão Responder */}
-                    {!questaoRespondida && (
-                        <div className="flex justify-start">
+                    {/* Botões de Ação */}
+                    <div className="flex justify-start gap-3">
+                        {!questaoRespondida && (
                             <Button
                                 onClick={() => handleSubmit(respostaSelecionada)}
                                 disabled={!respostaSelecionada || isSubmitting}
@@ -351,6 +370,60 @@ export function Questao({
                                     'Responder'
                                 )}
                             </Button>
+                        )}
+                        
+                        {/* Botão Explicação da IA - Só habilitado após responder e antes de gerar */}
+                        <Button
+                            onClick={handleBuscarExplicacaoIA}
+                            disabled={!questaoRespondida || isLoadingGemini || !!geminiResposta}
+                            variant="outline"
+                            className="border-purple-300 text-purple-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                                !questaoRespondida 
+                                    ? "Responda a questão primeiro para ver a explicação da IA" 
+                                    : geminiResposta 
+                                    ? "Explicação já gerada. Use o acordeon abaixo para visualizar" 
+                                    : ""
+                            }
+                        >
+                            {isLoadingGemini ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Gerando...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    Explicação da IA
+                                </>
+                            )}
+                        </Button>
+                    </div>
+
+                    {/* Seção de Explicação da IA - Acordeon */}
+                    {geminiResposta && (
+                        <div className="mt-6 border-t border-slate-200">
+                            <Accordion 
+                                type="single" 
+                                collapsible 
+                                className="w-full"
+                                value={explicacaoAberta}
+                                onValueChange={setExplicacaoAberta}
+                            >
+                                <AccordionItem value="explicacao-ia" className="border-none">
+                                    <AccordionTrigger className="px-0 py-4 hover:no-underline hover:bg-transparent transition-colors">
+                                        <div className="flex items-center gap-2 text-sm text-purple-700">
+                                            <Sparkles className="w-4 h-4" />
+                                            <span className="font-medium">Explicação da IA</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-0 pb-4 pt-0">
+                                        <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200">
+                                            <MarkdownRenderer content={geminiResposta.resposta} />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
                         </div>
                     )}
                 </CardContent>
