@@ -2,10 +2,15 @@ import { Card, CardContent } from "../ui/card"
 import { Label } from "../ui/label"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { IQuestao } from "@/types/questao/IQuestao"
+// Tipo ResolucaoQuestaoPayload definido localmente
+interface ResolucaoQuestaoPayload {
+    questao_id: number;
+    is_certa: boolean;
+}
 import { useState } from "react";
 import ListaComentarios from "./comentario/ListaComentarios";
 import FormComentario from "./comentario/FormComentario";
-import { MessageCircle, Save } from "lucide-react"
+import { MessageCircle, Save, CheckCircle2, XCircle, Loader2, Scissors } from "lucide-react"
 import { Button } from "../ui/button"
 import { toast } from "sonner"
 import { Separator } from "../ui/separator"
@@ -15,6 +20,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import { QuestaoService } from "@/lib/services/questao/QuestaoService"
 
 interface QuestaoProps {
     questao: IQuestao;
@@ -29,13 +35,16 @@ export function Questao({
 }: QuestaoProps) {
     const [comentarios, setComentarios] = useState(questao.comentarios || []);
     const [respostaSelecionada, setRespostaSelecionada] = useState<string | null>(null);
-    const [questaoNumero] = useState(1); 
+    const [questaoNumero] = useState(1);
+    const [questaoRespondida, setQuestaoRespondida] = useState(questao.ja_respondeu || false);
+    const [respostaCorreta, setRespostaCorreta] = useState<boolean | null>(null);
+    const [alternativaEscolhidaId, setAlternativaEscolhidaId] = useState<number | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [alternativasEliminadas, setAlternativasEliminadas] = useState<Set<number>>(new Set());
     
     const handleComentarioAdicionado = (novoComentario: any) => {
-
         setComentarios(prev => {
             const novaLista = [...prev, novoComentario];
-            // Adicione este log para ver a lista completa antes de renderizar
             return novaLista;
         });
     };
@@ -45,12 +54,25 @@ export function Questao({
         onAlternativaSelect?.(alternativaId);
     };
 
+    const toggleEliminarAlternativa = (alternativaId: number, e: React.MouseEvent) => {
+        e.stopPropagation(); // Previne que o radio seja selecionado ao clicar na tesoura
+        setAlternativasEliminadas(prev => {
+            const novasEliminadas = new Set(prev);
+            if (novasEliminadas.has(alternativaId)) {
+                novasEliminadas.delete(alternativaId);
+            } else {
+                novasEliminadas.add(alternativaId);
+            }
+            return novasEliminadas;
+        });
+    };
+
     const handleSalvar = () => {
         // Implementar lógica de salvar questão
         toast.success("Questão salva com sucesso!");
     };
 
-    function handleSubmit(respostaSelecionada: string | null): void {
+    async function handleSubmit(respostaSelecionada: string | null): Promise<void> {
         if (!respostaSelecionada) {
             toast.error("Selecione uma alternativa!");
             return;
@@ -65,10 +87,34 @@ export function Questao({
             return;
         }
 
-        if (alternativaSelecionada.is_correta) {
-            toast.success("Resposta correta! 🎉");
-        } else {
-            toast.error("Resposta incorreta.");
+        setIsSubmitting(true);
+        const alternativaId = parseInt(respostaSelecionada);
+        const isCorreta = alternativaSelecionada.is_correta;
+
+        try {
+            const payload: ResolucaoQuestaoPayload = {
+                questao_id: questao.id,
+                is_certa: isCorreta
+            };
+
+            await QuestaoService.responderQuestao(payload);
+            
+            // Atualizar estados para feedback visual
+            setQuestaoRespondida(true);
+            setRespostaCorreta(isCorreta);
+            setAlternativaEscolhidaId(alternativaId);
+
+            // Feedback toast
+            if (isCorreta) {
+                toast.success("Parabéns! Resposta correta! 🎉");
+            } else {
+                toast.error("Resposta incorreta. Continue estudando!");
+            }
+        } catch (error) {
+            console.error("Erro ao responder questão:", error);
+            toast.error("Erro ao enviar resposta. Tente novamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -128,6 +174,43 @@ export function Questao({
                         </p>
                     </div>
 
+                    {/* Feedback Banner */}
+                    {questaoRespondida && respostaCorreta !== null && (
+                        <div className={`mb-6 p-4 rounded-lg border-2 ${
+                            respostaCorreta 
+                                ? 'bg-green-50 border-green-200' 
+                                : 'bg-red-50 border-red-200'
+                        }`}>
+                            <div className="flex items-center gap-3">
+                                {respostaCorreta ? (
+                                    <>
+                                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-semibold text-green-800">
+                                                Resposta Correta! 🎉
+                                            </p>
+                                            <p className="text-xs text-green-700 mt-0.5">
+                                                Parabéns! Você acertou esta questão.
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-semibold text-red-800">
+                                                Resposta Incorreta
+                                            </p>
+                                            <p className="text-xs text-red-700 mt-0.5">
+                                                Continue estudando! A resposta correta está destacada abaixo.
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Alternativas */}
                     <fieldset className="mb-6">
                         <legend className="sr-only">
@@ -137,33 +220,114 @@ export function Questao({
                             className="space-y-3"
                             value={respostaSelecionada}
                             onValueChange={(value) => {
-                                setRespostaSelecionada(value);
-                                handleAlternativaChange(value);
+                                if (!questaoRespondida) {
+                                    setRespostaSelecionada(value);
+                                    handleAlternativaChange(value);
+                                }
                             }}
+                            disabled={questaoRespondida}
                         >
                             {questao.alternativas.map((alternativa, index) => {
                                 const letra = String.fromCharCode(65 + index); // A, B, C, D
+                                const foiEscolhida = alternativaEscolhidaId === alternativa.id;
+                                const eCorreta = alternativa.is_correta;
+                                const mostrarFeedback = questaoRespondida;
+                                const estaEliminada = alternativasEliminadas.has(alternativa.id);
+
+                                // Determinar classes baseado no estado
+                                let containerClasses = "flex items-start gap-3 p-3 rounded-lg transition-all group relative";
+                                let letraClasses = "flex items-center justify-center w-6 h-6 rounded-full border-2 mt-0.5 flex-shrink-0";
+                                let labelClasses = "text-sm cursor-pointer flex-1 leading-relaxed";
+
+                                if (mostrarFeedback) {
+                                    if (eCorreta) {
+                                        // Alternativa correta sempre em verde
+                                        containerClasses += " bg-green-50 border border-green-200";
+                                        letraClasses += " border-green-500 bg-green-100";
+                                        labelClasses += " text-green-700 font-medium";
+                                    } else if (foiEscolhida && !eCorreta) {
+                                        // Alternativa escolhida mas errada em vermelho
+                                        containerClasses += " bg-red-50 border border-red-200";
+                                        letraClasses += " border-red-500 bg-red-100";
+                                        labelClasses += " text-red-700 font-medium";
+                                    } else {
+                                        // Alternativas não escolhidas
+                                        containerClasses += " opacity-60";
+                                        letraClasses += " border-slate-300";
+                                        labelClasses += " text-slate-500";
+                                    }
+                                } else {
+                                    // Estado normal (não respondida)
+                                    containerClasses += " hover:bg-slate-50";
+                                    letraClasses += " border-slate-300";
+                                    labelClasses += " text-slate-700";
+                                }
+
+                                // Aplicar efeitos de eliminação
+                                if (estaEliminada) {
+                                    labelClasses += " line-through opacity-50";
+                                    containerClasses += " opacity-50";
+                                }
+
                                 return (
-                                    <div key={alternativa.id} className="flex items-start gap-3">
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-slate-300 mt-0.5 flex-shrink-0">
-                                            <span className="text-xs font-semibold text-slate-700">{letra}</span>
+                                    <div key={alternativa.id} className={containerClasses}>
+                                        <div className="flex items-center gap-2">
+                                            {/* Ícone de tesoura - aparece apenas no hover e quando não está respondida */}
+                                            {!questaoRespondida && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => toggleEliminarAlternativa(alternativa.id, e)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1 hover:bg-slate-100 rounded-md"
+                                                    aria-label={estaEliminada ? "Restaurar alternativa" : "Eliminar alternativa"}
+                                                >
+                                                    <Scissors 
+                                                        className={`w-4 h-4 transition-colors ${
+                                                            estaEliminada 
+                                                                ? 'text-orange-500' 
+                                                                : 'text-slate-400 hover:text-slate-600'
+                                                        }`} 
+                                                    />
+                                                </button>
+                                            )}
+                                            
+                                            <div className={letraClasses}>
+                                                <span className={`text-xs font-semibold ${
+                                                    mostrarFeedback && eCorreta ? 'text-green-700' :
+                                                    mostrarFeedback && foiEscolhida && !eCorreta ? 'text-red-700' :
+                                                    'text-slate-700'
+                                                }`}>
+                                                    {letra}
+                                                </span>
+                                            </div>
                                         </div>
+                                        
                                         <RadioGroupItem
                                             value={String(alternativa.id)}
                                             id={`alternativa-${questao.id}-${alternativa.id}`}
-                                            disabled={questao.ja_respondeu}
-                                            className="mt-0.5 border-slate-400 text-blue-600"
+                                            disabled={questaoRespondida || estaEliminada}
+                                            className={`mt-0.5 ${
+                                                mostrarFeedback && eCorreta
+                                                    ? 'border-green-500 text-green-600'
+                                                    : mostrarFeedback && foiEscolhida && !eCorreta
+                                                    ? 'border-red-500 text-red-600'
+                                                    : 'border-slate-400 text-blue-600'
+                                            } ${estaEliminada ? 'opacity-50' : ''}`}
                                         />
                                         <Label
                                             htmlFor={`alternativa-${questao.id}-${alternativa.id}`}
-                                            className={
-                                                questao.ja_respondeu && alternativa.is_correta
-                                                    ? "text-green-600 font-medium cursor-pointer flex-1 text-sm"
-                                                    : "text-sm text-slate-700 cursor-pointer flex-1 leading-relaxed"
-                                            }
+                                            className={labelClasses}
                                         >
                                             {alternativa.descricao}
                                         </Label>
+                                        
+                                        
+
+                                        {mostrarFeedback && eCorreta && (
+                                            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                        )}
+                                        {mostrarFeedback && foiEscolhida && !eCorreta && (
+                                            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                        )}
                                     </div>
                                 );
                             })}
@@ -171,15 +335,24 @@ export function Questao({
                     </fieldset>
 
                     {/* Botão Responder */}
-                    <div className="flex justify-start">
-                        <Button
-                            onClick={() => handleSubmit(respostaSelecionada)}
-                            disabled={questao.ja_respondeu || !respostaSelecionada}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                            Responder
-                        </Button>
-                    </div>
+                    {!questaoRespondida && (
+                        <div className="flex justify-start">
+                            <Button
+                                onClick={() => handleSubmit(respostaSelecionada)}
+                                disabled={!respostaSelecionada || isSubmitting}
+                                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Enviando...
+                                    </>
+                                ) : (
+                                    'Responder'
+                                )}
+                            </Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

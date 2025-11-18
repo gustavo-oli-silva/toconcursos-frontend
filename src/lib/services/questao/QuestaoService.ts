@@ -2,6 +2,8 @@ import { Filtro } from '@/types/questao/Filtro';
 import { ApiFetch } from '../ApiFetch';
 import axios from 'axios';
 import { IQuestao } from '@/types/questao/IQuestao';
+import Cookies from "js-cookie"
+
 
 interface ApiResponse<T> {
   data: T;
@@ -20,6 +22,7 @@ interface FiltroPayload {
   skip?: number;
   limit?: number;
 }
+
 
 export const QuestaoService = {
   salvarQuestao: async (questao: any) => {
@@ -83,4 +86,18 @@ export const QuestaoService = {
     );
     return response.data.data;
   },
+
+  async responderQuestao(payload: ResolucaoQuestaoPayload): Promise<void> {
+    const response = await axios.post<ApiResponse<void>>(
+      `${process.env.NEXT_PUBLIC_API_URL}/resolucoes-questoes/`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Cookies.get('auth_token')}`
+        }
+      }
+    );
+    return response.data.data;
+  }
 };
