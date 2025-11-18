@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AppHeader } from "@/components/project/AppHeader";
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService";
 import { CalendarioSemanal } from "@/components/project/cronograma/CalendarioSemanal";
 import { Cronograma } from "@/types/cronograma/Cronograma";
@@ -54,7 +53,6 @@ export default function CronogramaDetailPage({ params }: CronogramaPageProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <AppHeader />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -68,7 +66,6 @@ export default function CronogramaDetailPage({ params }: CronogramaPageProps) {
   if (error || !cronograma) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <AppHeader />
         <div className="flex items-center justify-center min-h-[50vh]">
           <Card className="p-8 text-center max-w-md mx-auto">
             <div className="text-red-500 mb-4">
@@ -92,7 +89,6 @@ export default function CronogramaDetailPage({ params }: CronogramaPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <AppHeader />
       <div className="px-4 py-8 md:px-6 md:py-12 lg:px-8">
         <main className="max-w-7xl mx-auto space-y-6">
           {/* Header Simples */}

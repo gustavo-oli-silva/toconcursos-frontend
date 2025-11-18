@@ -1,6 +1,5 @@
 "use client"
 
-import { AppHeader } from "@/components/project/AppHeader"
 import { Dropdown } from "@/components/project/Dropdown"
 import { Questao } from "@/components/project/Questao"
 import { IQuestao } from "@/types/questao/IQuestao"
@@ -71,7 +70,6 @@ export default function QuestoesScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <AppHeader />
       <div className="px-4 py-8 md:px-6 md:py-12 lg:px-8">
         <main className="max-w-7xl mx-auto space-y-10">
           <header className="relative overflow-hidden rounded-3xl bg-white/90 backdrop-blur-md border border-slate-200/50 shadow-2xl shadow-blue-500/10 p-8 lg:p-12">

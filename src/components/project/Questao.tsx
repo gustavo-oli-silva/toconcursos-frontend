@@ -78,13 +78,13 @@ export function Questao({
                     {/* Informações básicas da questão */}
                     <div className="flex flex-wrap gap-2 justify-center mb-4">
                         <Badge variant="secondary" className="text-xs">
-                            {questao.banca.label}
+                            {questao.banca?.label}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                            {questao.orgao.label}
+                            {questao.orgao?.label}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                            {questao.instituicao.label}
+                            {questao.instituicao?.label}
                         </Badge>
                         <Badge
                             variant={questao.dificuldade === 'Fácil' ? 'default' :
@@ -94,7 +94,7 @@ export function Questao({
                             {questao.dificuldade}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                            {questao.disciplina.label}
+                            {questao.disciplina?.label}
                         </Badge>
                     </div>
 

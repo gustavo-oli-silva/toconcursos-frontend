@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Calendar, Clock, BookOpen, Save, AlertCircle } from "lucide-react"
-import { AppHeader } from "@/components/project/AppHeader"
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService"
 import { DisciplinaService } from "@/lib/services/disciplina/DisciplinaService"
 import type { EstudoDiario } from "@/types/cronograma/EstudoDiario"
@@ -144,7 +143,6 @@ export default function NewCronogramaScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <AppHeader />
       <div className="px-4 py-8 md:px-6 md:py-12 lg:px-8">
         <main className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
