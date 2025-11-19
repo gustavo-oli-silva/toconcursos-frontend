@@ -19,7 +19,7 @@ export default function CronogramasPage() {
   const loadCronogramas = async () => {
     try {
       const cronogramasDoBackend = await CronogramaService.buscarCronogramas();
-      setCronogramas(cronogramasDoBackend.data || []);
+      setCronogramas(cronogramasDoBackend || []);
     } catch (error) {
       console.error("Erro ao carregar cronogramas:", error);
     }
