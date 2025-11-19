@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import { Check, CreditCard, Lock, Loader2, ArrowLeft } from "lucide-react"
-import { AppHeader } from "@/components/project/AppHeader"
 import { Footer } from "@/components/project/landing_page/Footer"
 import { PlanoService } from "@/lib/services/plano/PlanoService"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -190,7 +189,6 @@ export default function PagamentoPage() {
   if (loadingPlano) {
     return (
       <div>
-        <AppHeader />
         <div className="bg-[#f5f5f7] min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         </div>
@@ -207,7 +205,6 @@ export default function PagamentoPage() {
 
   return (
     <div>
-      <AppHeader />
       <div className="bg-[#f5f5f7]">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Botão Voltar */}

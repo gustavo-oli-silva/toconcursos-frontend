@@ -3,7 +3,6 @@
 import { Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { AppHeader } from "@/components/project/AppHeader"
 import { Footer } from "@/components/project/landing_page/Footer"
 import { useState, useEffect } from "react"
 import { PlanoService } from "@/lib/services/plano/PlanoService"
@@ -62,7 +61,6 @@ export default function PlanosPage() {
   if (loading) {
     return (
       <div>
-        <AppHeader />
         <div className="bg-[#f5f5f7] px-6 py-8">
           <div className="mx-auto max-w-[1200px] flex items-center justify-center min-h-[400px]">
             <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
@@ -76,7 +74,6 @@ export default function PlanosPage() {
   if (error) {
     return (
       <div>
-        <AppHeader />
         <div className="bg-[#f5f5f7] px-6 py-8">
           <div className="mx-auto max-w-[1200px]">
             <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-center">
@@ -97,7 +94,6 @@ export default function PlanosPage() {
 
   return (
     <div>
-      <AppHeader />
       <div className="bg-[#f5f5f7] px-6 py-8">
         <div className="mx-auto max-w-[1200px]">
           <div className="mb-8 border-l-[3px] border-l-indigo-600 pl-3">
