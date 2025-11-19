@@ -86,7 +86,7 @@ export function PricingSection() {
                   {plan.originalPrice && (
                     <div className="text-sm text-muted-foreground">
                       <span className="line-through">{plan.originalPrice}</span>
-                      <span className="ml-2 text-green-600 font-semibold">Economize 31%</span>
+                      <span className="ml-2 text-green-600 dark:text-green-400 font-semibold">Economize 31%</span>
                     </div>
                   )}
                   <p className="text-muted-foreground">{plan.description}</p>

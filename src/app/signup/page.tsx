@@ -9,7 +9,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Signup Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-12 bg-background">
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-12 bg-background dark:bg-slate-900">
         <div className="mx-auto w-full max-w-md">
           {/* Back Button - Mobile */}
           <Link
@@ -23,10 +23,10 @@ export default function SignupPage() {
           {/* Logo */}
          <div className="flex justify-center mb-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-400 dark:to-teal-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">T</span>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 dark:from-teal-400 dark:to-teal-500 bg-clip-text text-transparent">
                 TOconcursos
               </span>
             </div>

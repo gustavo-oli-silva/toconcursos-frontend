@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./context/AuthContext";
 import { AppHeader } from "@/components/project/AppHeader";
 import { Footer } from "@/components/project/landing_page/Footer";
+import { ThemeProvider } from "@/components/project/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,32 +28,39 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            <AppHeader />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </AuthProvider>
-        <Toaster 
-          richColors
-          position="top-right" 
-          toastOptions={{
-            duration: 5000, 
-            classNames: {
-              toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-              description: 'group-[.toast]:text-muted-foreground',
-              actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-              cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-            },
-          }}
-        />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <div className="flex flex-col min-h-screen">
+              <AppHeader />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </AuthProvider>
+          <Toaster 
+            richColors
+            position="top-right" 
+            toastOptions={{
+              duration: 5000, 
+              classNames: {
+                toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+                description: 'group-[.toast]:text-muted-foreground',
+                actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+                cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+              },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

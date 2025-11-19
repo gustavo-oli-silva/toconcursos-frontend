@@ -2,7 +2,7 @@ import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "luci
 
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300">
+    <footer className="bg-slate-900 dark:bg-slate-950 text-slate-300 dark:text-slate-400">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
@@ -17,25 +17,25 @@ export function Footer() {
             <div className="flex gap-4">
               <a
                 href="#"
-                className="w-10 h-10 bg-slate-800 hover:bg-indigo-600 rounded-lg flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-slate-800 dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-slate-800 hover:bg-indigo-600 rounded-lg flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-slate-800 dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-slate-800 hover:bg-indigo-600 rounded-lg flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-slate-800 dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-slate-800 hover:bg-indigo-600 rounded-lg flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-slate-800 dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors"
               >
                 <Youtube className="w-5 h-5" />
               </a>
@@ -130,17 +130,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8">
+        <div className="border-t border-slate-800 dark:border-slate-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-slate-400 text-sm">© 2024 TOconcursos. Todos os direitos reservados.</p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm">© 2024 TOconcursos. Todos os direitos reservados.</p>
             <div className="flex gap-6 text-sm">
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                 Termos de Uso
               </a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                 Política de Privacidade
               </a>
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                 Cookies
               </a>
             </div>

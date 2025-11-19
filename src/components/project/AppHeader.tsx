@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ThemeToggle } from "./ThemeToggle"
 
 export function AppHeader() {
     const { user, loading, logout } = useAuth()
@@ -29,7 +30,7 @@ export function AppHeader() {
 
     if (loading) {
         return (
-            <header className="p-4 border-b">
+            <header className="p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
                 <div className="container mx-auto">
                     <p className="text-muted-foreground">Carregando...</p>
                 </div>
@@ -38,7 +39,7 @@ export function AppHeader() {
     }
 
     return (
-        <div className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/60 shadow-lg backdrop-blur-sm">
+        <div className="bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-b border-slate-200/60 dark:border-slate-700/60 shadow-lg backdrop-blur-sm">
             <nav className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-3 md:py-5">
                     <Link href="/">
@@ -51,14 +52,14 @@ export function AppHeader() {
                         <li>
                             <Link
                                 href="/"
-                                className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group"
+                                className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 rounded-lg hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20 transition-all duration-200 cursor-pointer group"
                             >
                                 Início
                                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full"></span>
                             </Link>
                         </li>
                         <li>
-                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 rounded-lg hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20 transition-all duration-200 cursor-pointer group">
                                <Link href="/planos">
                                 Planos
                                </Link>
@@ -66,7 +67,7 @@ export function AppHeader() {
                             </span>
                         </li>
                         <li>
-                            <span  className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                            <span  className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 rounded-lg hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20 transition-all duration-200 cursor-pointer group">
                                 <Link href="/questoes">
                                     Questões
                                 </Link>
@@ -74,7 +75,7 @@ export function AppHeader() {
                             </span>
                         </li>
                         <li>
-                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                            <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 rounded-lg hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20 transition-all duration-200 cursor-pointer group">
                                 <Link   href="/cronogramas">
                                     Cronogramas
                                 </Link>
@@ -82,12 +83,16 @@ export function AppHeader() {
                             </span>
                         </li>
 
+                        <li className="ml-2">
+                            <ThemeToggle />
+                        </li>
+
                         {user ? (
                             <li className="ml-4">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-indigo-50/80">
-                                            <Avatar className="h-9 w-9 border-2 border-indigo-200 hover:border-indigo-300 transition-colors">
+                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20">
+                                            <Avatar className="h-9 w-9 border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
                                                 <AvatarImage src={user.avatar || undefined} alt={user.nome} />
                                                 <AvatarFallback className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold">
                                                     {getUserInitials(user.nome)}
@@ -117,7 +122,7 @@ export function AppHeader() {
                             </li>
                         ) : (
                             <li>
-                                <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 hover:text-indigo-700 rounded-lg hover:bg-indigo-50/80 transition-all duration-200 cursor-pointer group">
+                                <span className="relative px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-400 rounded-lg hover:bg-indigo-50/80 dark:hover:bg-indigo-950/20 transition-all duration-200 cursor-pointer group">
                                     <Link href="/login">
                                         Login
                                     </Link>
@@ -128,8 +133,9 @@ export function AppHeader() {
                         )}
                     </ul>
 
-                    <div className="md:hidden">
-                        <button className="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors duration-200">
+                    <div className="md:hidden flex items-center gap-2">
+                        <ThemeToggle />
+                        <button className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg transition-colors duration-200">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>

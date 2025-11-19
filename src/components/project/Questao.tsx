@@ -146,16 +146,16 @@ export function Questao({
 
 
     return (
-        <article className="w-full bg-white rounded-lg shadow-md border border-slate-200">
-            <Card className="border-0 shadow-none">
+        <article className="w-full bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
+            <Card className="border-0 shadow-none bg-transparent">
                 {/* Header com número, ID, contexto e botão Salvar */}
-                <div className="px-6 py-4 border-b border-slate-200">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                                                        {/* ID da questão */}
-                            <span className="text-sm font-medium text-slate-700">{questaoId}</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{questaoId}</span>
                             {/* Contexto da prova */}
-                            <span className="text-sm text-slate-600">{contextoProva} - {anoProva}</span>
+                            <span className="text-sm text-slate-600 dark:text-slate-400">{contextoProva} - {anoProva}</span>
                         </div>
                         {/* Botão Salvar */}
                         <Button
@@ -172,8 +172,8 @@ export function Questao({
 
                 <CardContent className="p-6">
                     {/* Seção de Metadados */}
-                    <div className="mb-6 pb-4 border-b border-slate-200">
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                    <div className="mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
                             <span>Ano: {anoProva}</span>
                             <Separator orientation="vertical" className="h-4" />
                             <span>Banca: {questao.banca?.label || 'N/A'}</span>
@@ -188,7 +188,7 @@ export function Questao({
 
                     {/* Texto da Questão */}
                     <div className="mb-6">
-                        <p className="text-base text-slate-800 leading-relaxed">
+                        <p className="text-base text-slate-800 dark:text-slate-200 leading-relaxed">
                             {questao.enunciado}
                         </p>
                     </div>
@@ -197,30 +197,30 @@ export function Questao({
                     {questaoRespondida && respostaCorreta !== null && (
                         <div className={`mb-6 p-4 rounded-lg border-2 ${
                             respostaCorreta 
-                                ? 'bg-green-50 border-green-200' 
-                                : 'bg-red-50 border-red-200'
+                                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                         }`}>
                             <div className="flex items-center gap-3">
                                 {respostaCorreta ? (
                                     <>
-                                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                                         <div>
-                                            <p className="text-sm font-semibold text-green-800">
+                                            <p className="text-sm font-semibold text-green-800 dark:text-green-200">
                                                 Resposta Correta! 🎉
                                             </p>
-                                            <p className="text-xs text-green-700 mt-0.5">
+                                            <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">
                                                 Parabéns! Você acertou esta questão.
                                             </p>
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                                        <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                                         <div>
-                                            <p className="text-sm font-semibold text-red-800">
+                                            <p className="text-sm font-semibold text-red-800 dark:text-red-200">
                                                 Resposta Incorreta
                                             </p>
-                                            <p className="text-xs text-red-700 mt-0.5">
+                                            <p className="text-xs text-red-700 dark:text-red-300 mt-0.5">
                                                 Continue estudando! A resposta correta está destacada abaixo.
                                             </p>
                                         </div>
@@ -261,25 +261,25 @@ export function Questao({
                                 if (mostrarFeedback) {
                                     if (eCorreta) {
                                         // Alternativa correta sempre em verde
-                                        containerClasses += " bg-green-50 border border-green-200";
-                                        letraClasses += " border-green-500 bg-green-100";
-                                        labelClasses += " text-green-700 font-medium";
+                                        containerClasses += " bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800";
+                                        letraClasses += " border-green-500 dark:border-green-400 bg-green-100 dark:bg-green-900/30";
+                                        labelClasses += " text-green-700 dark:text-green-300 font-medium";
                                     } else if (foiEscolhida && !eCorreta) {
                                         // Alternativa escolhida mas errada em vermelho
-                                        containerClasses += " bg-red-50 border border-red-200";
-                                        letraClasses += " border-red-500 bg-red-100";
-                                        labelClasses += " text-red-700 font-medium";
+                                        containerClasses += " bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800";
+                                        letraClasses += " border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-900/30";
+                                        labelClasses += " text-red-700 dark:text-red-300 font-medium";
                                     } else {
                                         // Alternativas não escolhidas
                                         containerClasses += " opacity-60";
-                                        letraClasses += " border-slate-300";
-                                        labelClasses += " text-slate-500";
+                                        letraClasses += " border-slate-300 dark:border-slate-600";
+                                        labelClasses += " text-slate-500 dark:text-slate-400";
                                     }
                                 } else {
                                     // Estado normal (não respondida)
-                                    containerClasses += " hover:bg-slate-50";
-                                    letraClasses += " border-slate-300";
-                                    labelClasses += " text-slate-700";
+                                    containerClasses += " hover:bg-slate-50 dark:hover:bg-slate-700/50";
+                                    letraClasses += " border-slate-300 dark:border-slate-600";
+                                    labelClasses += " text-slate-700 dark:text-slate-300";
                                 }
 
                                 // Aplicar efeitos de eliminação
@@ -296,14 +296,14 @@ export function Questao({
                                                 <button
                                                     type="button"
                                                     onClick={(e) => toggleEliminarAlternativa(alternativa.id, e)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1 hover:bg-slate-100 rounded-md"
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
                                                     aria-label={estaEliminada ? "Restaurar alternativa" : "Eliminar alternativa"}
                                                 >
                                                     <Scissors 
                                                         className={`w-4 h-4 transition-colors ${
                                                             estaEliminada 
-                                                                ? 'text-orange-500' 
-                                                                : 'text-slate-400 hover:text-slate-600'
+                                                                ? 'text-orange-500 dark:text-orange-400' 
+                                                                : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                                                         }`} 
                                                     />
                                                 </button>
@@ -311,9 +311,9 @@ export function Questao({
                                             
                                             <div className={letraClasses}>
                                                 <span className={`text-xs font-semibold ${
-                                                    mostrarFeedback && eCorreta ? 'text-green-700' :
-                                                    mostrarFeedback && foiEscolhida && !eCorreta ? 'text-red-700' :
-                                                    'text-slate-700'
+                                                    mostrarFeedback && eCorreta ? 'text-green-700 dark:text-green-300' :
+                                                    mostrarFeedback && foiEscolhida && !eCorreta ? 'text-red-700 dark:text-red-300' :
+                                                    'text-slate-700 dark:text-slate-300'
                                                 }`}>
                                                     {letra}
                                                 </span>
@@ -412,13 +412,13 @@ export function Questao({
                             >
                                 <AccordionItem value="explicacao-ia" className="border-none">
                                     <AccordionTrigger className="px-0 py-4 hover:no-underline hover:bg-transparent transition-colors">
-                                        <div className="flex items-center gap-2 text-sm text-purple-700">
+                                        <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
                                             <Sparkles className="w-4 h-4" />
                                             <span className="font-medium">Explicação da IA</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="px-0 pb-4 pt-0">
-                                        <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200">
+                                        <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800">
                                             <MarkdownRenderer content={geminiResposta.resposta} />
                                         </div>
                                     </AccordionContent>
@@ -431,11 +431,11 @@ export function Questao({
 
             {/* Seção de Comentários - Acordeon */}
             {mostrarComentarios && (
-                <div className="border-t border-slate-200">
+                <div className="border-t border-slate-200 dark:border-slate-700">
                     <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="comentarios" className="border-none">
-                            <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
-                                <div className="flex items-center gap-2 text-sm text-slate-700">
+                                    <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                                     <MessageCircle className="w-4 h-4" />
                                     <span className="font-medium">Comentários ({comentarios.length})</span>
                                 </div>

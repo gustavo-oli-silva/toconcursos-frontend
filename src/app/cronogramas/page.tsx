@@ -70,18 +70,18 @@ export default function CronogramasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="px-4 py-8 md:px-6 md:py-12 lg:px-8">
         <main className="max-w-7xl mx-auto space-y-10">
           {/* Header */}
-          <header className="relative overflow-hidden rounded-3xl bg-white/90 backdrop-blur-md border border-slate-200/50 shadow-2xl shadow-blue-500/10 p-8 lg:p-12">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5"></div>
+          <header className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-2xl shadow-blue-500/10 dark:shadow-blue-900/20 p-8 lg:p-12">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-600/10 dark:via-indigo-600/10 dark:to-purple-600/10"></div>
             <div className="relative flex flex-col items-center gap-6 lg:flex-row lg:justify-between">
               <div className="text-center lg:text-left">
-                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent leading-tight">
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 dark:from-slate-200 dark:via-blue-300 dark:to-indigo-300 bg-clip-text text-transparent leading-tight">
                   Cronogramas
                 </h1>
-                <p className="mt-2 text-slate-600 text-lg font-medium">
+                <p className="mt-2 text-slate-600 dark:text-slate-400 text-lg font-medium">
                   Gerencie os seus estudos de forma inteligente.
                 </p>
               </div>
@@ -98,12 +98,12 @@ export default function CronogramasPage() {
           {/* Lista de Cronogramas */}
           <section className="space-y-6">
             {cronogramas.length === 0 ? (
-              <Card className="p-12 text-center bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl shadow-xl">
+              <Card className="p-12 text-center bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 rounded-3xl shadow-xl">
                 <div className="flex flex-col items-center gap-4">
-                  <Calendar className="h-16 w-16 text-slate-400" />
+                  <Calendar className="h-16 w-16 text-slate-400 dark:text-slate-500" />
                   <div>
-                    <h3 className="text-xl font-semibold text-slate-700 mb-2">Nenhum cronograma encontrado</h3>
-                    <p className="text-slate-500 mb-6">
+                    <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2">Nenhum cronograma encontrado</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mb-6">
                       Crie seu primeiro cronograma de estudos para começar a organizar sua rotina.
                     </p>
                     <Button
@@ -121,30 +121,30 @@ export default function CronogramasPage() {
                 {cronogramas.map((cronograma) => (
                   <Card
                     key={cronograma.id}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-2xl overflow-hidden"
+                    className="cursor-pointer transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-900/20 hover:-translate-y-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 rounded-2xl overflow-hidden"
                     onClick={() => handleCronogramaClick(cronograma.id)}
                   >
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <CardTitle className="text-xl font-bold text-slate-800 mb-2 line-clamp-1">
+                            <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-1">
                               {cronograma.nome}
                             </CardTitle>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="mt-2 p-1 hover:bg-slate-100"
+                              className="mt-2 p-1 hover:bg-slate-100 dark:hover:bg-slate-700"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedCronogramaId(cronograma.id); // Define o ID selecionado
                                 setIsDialogOpen(true); // Abre o dialog
                               }}
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                             </Button>
                           </div>
-                          <CardDescription className="text-slate-600 line-clamp-2">
+                          <CardDescription className="text-slate-600 dark:text-slate-400 line-clamp-2">
                             {cronograma.descricao}
                           </CardDescription>
                         </div>
@@ -152,7 +152,7 @@ export default function CronogramasPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Estatísticas */}
-                      <div className="flex items-center gap-4 text-sm text-slate-600">
+                      <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
                           <span>{getTotalHorasSemanais(cronograma).toFixed(1)}h/semana</span>
@@ -165,7 +165,7 @@ export default function CronogramasPage() {
 
                       {/* Disciplinas */}
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-slate-700">Disciplinas:</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Disciplinas:</p>
                         <div className="flex flex-wrap gap-2">
                           {getDisciplinasUnicas(cronograma)
                             .slice(0, 3)
@@ -187,8 +187,8 @@ export default function CronogramasPage() {
                       </div>
 
                       {/* Data de criação */}
-                      <div className="pt-2 border-t border-slate-200/50">
-                        <p className="text-xs text-slate-500">
+                      <div className="pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Criado em {new Date(cronograma.data_criacao).toLocaleDateString("pt-BR")}
                         </p>
 

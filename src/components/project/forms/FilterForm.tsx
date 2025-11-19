@@ -119,27 +119,27 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
     };
 
     return (
-        <div className="relative overflow-hidden bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-500/10 p-6 md:p-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-blue-50/30"></div>
+        <div className="relative overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 rounded-3xl shadow-xl shadow-slate-500/10 dark:shadow-slate-900/20 p-6 md:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-blue-50/30 dark:from-slate-900/50 dark:to-blue-900/20"></div>
             <div className="relative space-y-6">
                 {/* Título da seção */}
-                <div className="pb-2 border-b border-slate-200">
-                    <h2 className="text-lg font-semibold text-slate-800">Filtros de Busca</h2>
-                    <p className="text-sm text-slate-500 mt-1">Selecione os critérios para filtrar as questões</p>
+                <div className="pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Filtros de Busca</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Selecione os critérios para filtrar as questões</p>
                 </div>
 
                 {/* Grid de filtros - reorganizado para melhor aproveitamento do espaço */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* Palavra Chave com botão de busca - ocupa 2 colunas em telas grandes */}
                     <div className="md:col-span-2 lg:col-span-2 space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Palavra Chave</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Palavra Chave</label>
                         <div className="flex gap-2">
                             <Input
                                 type="text"
                                 value={palavraChave}
                                 onChange={(e) => setPalavraChave(e.target.value)}
                                 placeholder="Digite uma palavra chave"
-                                className="flex-1 h-10 px-4 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                className="flex-1 h-10 px-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             />
                             <Button
                                 onClick={handleFiltrar}
@@ -153,7 +153,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
 
                     {/* Disciplina */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Disciplina</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Disciplina</label>
                         <Dropdown
                             label="Disciplina"
                             options={filtros?.disciplinas || []}
@@ -165,7 +165,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
 
                     {/* Órgão */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Órgão</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Órgão</label>
                         <Dropdown
                             label="Órgão"
                             options={filtros?.orgaos || []}
@@ -177,7 +177,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
 
                     {/* Instituição */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Instituição</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Instituição</label>
                         <Dropdown
                             label="Instituição"
                             options={filtros?.instituicoes || []}
@@ -191,7 +191,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
                 {/* Segunda linha - Banca */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className="md:col-span-1 lg:col-span-1 space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Banca</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Banca</label>
                         <Dropdown
                             label="Banca"
                             options={filtros?.bancas || []}
@@ -205,20 +205,20 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
                 </div>
 
                 {/* Rodapé com filtros aplicados e botões */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-t border-slate-200">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     {/* Filtros aplicados */}
                     <div className="flex-1 space-y-2">
-                        <p className="text-sm font-medium text-slate-600">Filtrar por:</p>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Filtrar por:</p>
                         <div className="flex flex-wrap gap-2 min-h-[32px]">
                             {Object.keys(filtrosAplicados).length === 0 ? (
-                                <span className="text-sm text-slate-400 italic">
+                                <span className="text-sm text-slate-400 dark:text-slate-500 italic">
                                     Os seus filtros aparecerão aqui.
                                 </span>
                             ) : (
                                 Object.entries(filtrosAplicados).map(([key, value]) => (
                                     <div
                                         key={key}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-sm text-blue-700"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full text-sm text-blue-700 dark:text-blue-300"
                                     >
                                         <span className="font-medium">
                                             {key === 'palavraChave' ? 'Palavra Chave' :
@@ -229,7 +229,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
                                         </span>
                                         <button
                                             onClick={() => removerFiltro(key as keyof FiltrosAplicados)}
-                                            className="hover:bg-blue-100 rounded-full p-0.5 transition-colors"
+                                            className="hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
@@ -244,7 +244,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
                         <Button
                             onClick={handleLimpar}
                             variant="outline"
-                            className="flex items-center gap-2 bg-white border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-6 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+                            className="flex items-center gap-2 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium px-6 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Limpar
@@ -252,7 +252,7 @@ export default function FilterForm({ onFilter, onClear }: FilterFormProps) {
                         <Button
                             onClick={handleFiltrar}
                             disabled={loading}
-                            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white font-semibold px-8 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
                             {loading ? 'Filtrando...' : 'Filtrar'}
                         </Button>

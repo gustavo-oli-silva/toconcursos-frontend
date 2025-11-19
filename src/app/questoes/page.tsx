@@ -30,15 +30,15 @@ export default function QuestoesScreen() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <main className="max-w-6xl mx-auto space-y-6">
           {/* Header simplificado */}
           <header className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">
               Minhas Questões
             </h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Organize e pratique suas questões favoritas
             </p>
           </header>
@@ -51,8 +51,8 @@ export default function QuestoesScreen() {
           {/* Lista de Questões */}
           <section className="space-y-6">
             {questoes.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-12 text-center">
-                <p className="text-slate-500">Nenhuma questão encontrada.</p>
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
+                <p className="text-slate-500 dark:text-slate-400">Nenhuma questão encontrada.</p>
               </div>
             ) : (
               questoes.map((questao, index) => (

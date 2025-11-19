@@ -164,7 +164,7 @@ export function ProfileHeader({ usuario, onProfileUpdate }: ProfileHeaderProps) 
 
         <div className="flex flex-row gap-4">
           <div 
-            className="bg-background rounded-lg p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors group relative" 
+            className="bg-background dark:bg-slate-800 rounded-lg p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors group relative border border-border dark:border-slate-700" 
             onClick={() => setIsOpening(true)}
           >
             <div className="flex items-start gap-3 w-full">
@@ -176,7 +176,7 @@ export function ProfileHeader({ usuario, onProfileUpdate }: ProfileHeaderProps) 
               <Edit3 className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3" />
             </div>
           </div>
-          <div className="bg-background rounded-lg p-4 flex items-center justify-center">
+          <div className="bg-background dark:bg-slate-800 rounded-lg p-4 flex items-center justify-center border border-border dark:border-slate-700">
             <div className="flex items-start gap-3">
               <Calendar1 className="text-2xl text-primary" />
               <div className="flex-1">
