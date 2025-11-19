@@ -32,12 +32,12 @@ export default function CronogramaDetailPage({ params }: CronogramaPageProps) {
         const { id } = await params;
         const res = await CronogramaService.buscarCronogramaPorID(id);
 
-        if (!res || !res.data) {
+        if (!res) {
           setError("Cronograma não encontrado");
           return;
         }
 
-        setCronograma(res.data);
+        setCronograma(res);
       } catch (error) {
         console.error("Erro ao carregar cronograma:", error);
         setError("Erro ao carregar cronograma");
