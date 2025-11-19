@@ -7,12 +7,18 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Check, CreditCard, Lock, Loader2, ArrowLeft, Copy, QrCode, FileText, CheckCircle2 } from "lucide-react"
+import { Check, CreditCard, Lock, Loader2, ArrowLeft, Copy, QrCode, FileText, CheckCircle2, Eye, EyeOff } from "lucide-react"
 import { Footer } from "@/components/project/landing_page/Footer"
 import { PlanoService } from "@/lib/services/plano/PlanoService"
 import { useRouter, useSearchParams } from "next/navigation"
 import { PagamentoRequest } from "@/types/plano/Pagamento"
 import { ToastService } from "@/lib/services/toast/ToastService"
+import { useAuth } from "@/hooks/useAuth"
+import { useForm } from "react-hook-form"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import Link from "next/link"
 
 interface PlanoData {
   id: number
@@ -34,9 +40,10 @@ interface PagamentoResponse {
 }
 
 export default function PagamentoPage() {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+  const [showLoginModal, setShowLoginModal] = useState(false)
   // Estado do plano
   const [plano, setPlano] = useState<PlanoData | null>(null)
   const [loadingPlano, setLoadingPlano] = useState(true)
@@ -56,6 +63,16 @@ export default function PagamentoPage() {
   // Estados do modal de pagamento
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoResponse | null>(null)
+
+  // Verificação inicial de autenticação
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setShowLoginModal(true)
+    } else if (user && showLoginModal) {
+      // Fecha o modal quando o usuário fizer login
+      setShowLoginModal(false)
+    }
+  }, [user, authLoading, showLoginModal])
 
   useEffect(() => {
     const planoId = searchParams.get('planoId')
@@ -155,6 +172,13 @@ export default function PagamentoPage() {
   }
 
   const handleFinalizarCompra = async () => {
+    // Segunda verificação: antes de finalizar a compra
+    if (!user) {
+      ToastService.warning('Você precisa estar logado para finalizar a compra')
+      setShowLoginModal(true)
+      return
+    }
+    
     if (!plano) return
     
     if (!validarFormulario()) return
@@ -696,6 +720,138 @@ export default function PagamentoPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Login */}
+      <Dialog 
+        open={showLoginModal} 
+        onOpenChange={(open) => {
+          // Só permite fechar se o usuário estiver logado
+          if (!open && user) {
+            setShowLoginModal(false)
+          } else if (!open && !user) {
+            // Se tentar fechar sem estar logado, redireciona para planos
+            ToastService.warning('É necessário fazer login para continuar')
+            router.push('/planos')
+          }
+        }}
+      >
+        <DialogContent className="max-w-md bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-3xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">Login Necessário</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Para continuar com o pagamento, você precisa estar logado.
+            </DialogDescription>
+          </DialogHeader>
+
+          <LoginFormModal 
+            onSuccess={() => {
+              setShowLoginModal(false)
+              // A URL já está mantida, não precisa redirecionar
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
+  )
+}
+
+// Componente de Login para o Modal
+function LoginFormModal({ onSuccess }: { onSuccess: () => void }) {
+  const [showPassword, setShowPassword] = useState(false)
+  const { login } = useAuth()
+  const formSchema = z
+    .object({
+      email: z.string().email("Por favor, insira um e-mail válido."),
+      senha: z.string().min(1, "A senha é obrigatória."),
+    })
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      senha: "",
+    },
+  })
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await login(values)
+      ToastService.success("Login realizado com sucesso!")
+      form.reset()
+      onSuccess()
+    } catch (error) {
+      console.error("Erro ao fazer login:", error)
+      ToastService.error("Erro ao fazer login. Verifique suas credenciais.")
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-foreground">E-mail</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="seu@email.com"
+                  type="email"
+                  className="h-12 border-border focus:border-primary transition-colors"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="senha"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-foreground">Senha</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    placeholder="••••••••"
+                    type={showPassword ? "text" : "password"}
+                    className="h-12 pr-12 border-border focus:border-primary transition-colors"
+                    {...field}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium"
+          size="lg"
+        >
+          Entrar
+        </Button>
+
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">
+            Não tem uma conta?{" "}
+            <Link href="/signup" className="text-primary hover:text-primary/80 font-medium transition-colors">
+              Criar conta
+            </Link>
+          </p>
+        </div>
+      </form>
+    </Form>
   )
 }
