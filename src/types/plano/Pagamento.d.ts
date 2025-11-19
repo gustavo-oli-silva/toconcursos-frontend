@@ -1,6 +1,8 @@
+import { Cartao } from './Cartao';
+
 export interface PagamentoRequest {
   id_plano: number;
-  tipo: 'pix' | 'cartao';
+  tipo: 'pix' | 'cartao' | 'boleto';
   valor: number;
-  cartao?: CartaoDTO;
+  cartao?: Cartao;
 }

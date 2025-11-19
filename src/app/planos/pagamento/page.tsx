@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
-import { Check, CreditCard, Lock, Loader2, ArrowLeft } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Check, CreditCard, Lock, Loader2, ArrowLeft, Copy, QrCode, FileText, CheckCircle2 } from "lucide-react"
 import { Footer } from "@/components/project/landing_page/Footer"
 import { PlanoService } from "@/lib/services/plano/PlanoService"
 import { useRouter, useSearchParams } from "next/navigation"
 import { PagamentoRequest } from "@/types/plano/Pagamento"
+import { ToastService } from "@/lib/services/toast/ToastService"
 
 interface PlanoData {
   id: number
@@ -18,6 +20,17 @@ interface PlanoData {
   descricao: string
   valor: number
   beneficios: string | string[]
+}
+
+interface PagamentoResponse {
+  id: number
+  id_plano: number
+  tipo: 'pix' | 'cartao' | 'boleto'
+  valor: number
+  data_pagamento: string
+  chave_pix?: string
+  codigo_barras?: string
+  cartao?: any
 }
 
 export default function PagamentoPage() {
@@ -29,7 +42,7 @@ export default function PagamentoPage() {
   const [loadingPlano, setLoadingPlano] = useState(true)
   
   // Estados do formulário
-  const [activeTab, setActiveTab] = useState("cartao")
+  const [activeTab, setActiveTab] = useState<"pix" | "cartao" | "boleto">("pix")
   const [cardNumber, setCardNumber] = useState("")
   const [validity, setValidity] = useState("")
   const [cvv, setCvv] = useState("")
@@ -39,6 +52,10 @@ export default function PagamentoPage() {
   const [coupon, setCoupon] = useState("")
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  
+  // Estados do modal de pagamento
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoResponse | null>(null)
 
   useEffect(() => {
     const planoId = searchParams.get('planoId')
@@ -47,7 +64,7 @@ export default function PagamentoPage() {
       carregarPlano(Number(planoId))
     } else {
       setLoadingPlano(false)
-      alert('ID do plano não encontrado')
+      ToastService.error('ID do plano não encontrado')
       router.push('/planos')
     }
   }, [searchParams, router])
@@ -56,10 +73,16 @@ export default function PagamentoPage() {
     try {
       setLoadingPlano(true)
       const data = await PlanoService.buscarPlanoPorId(planoId)
-      setPlano(data)
+      if (data) {
+        setPlano(data)
+      } else {
+        ToastService.error('Plano não encontrado')
+        router.push('/planos')
+      }
     } catch (err) {
       console.error('Erro ao carregar plano:', err)
-      alert('Erro ao carregar plano. Tente novamente.')
+      ToastService.error('Erro ao carregar plano. Tente novamente.')
+      router.push('/planos')
     } finally {
       setLoadingPlano(false)
     }
@@ -85,31 +108,45 @@ export default function PagamentoPage() {
     return formatted.substring(0, 14)
   }
 
+  const formatCodigoBarras = (codigo: string) => {
+    // Formata código de barras em grupos de 5 dígitos
+    return codigo.match(/.{1,5}/g)?.join(" ") || codigo
+  }
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      ToastService.success(`${type} copiado para a área de transferência!`)
+    } catch (err) {
+      ToastService.error('Erro ao copiar. Tente novamente.')
+    }
+  }
+
   const validarFormulario = (): boolean => {
     if (!acceptTerms) {
-      alert('Você precisa aceitar os termos e condições')
+      ToastService.error('Você precisa aceitar os termos e condições')
       return false
     }
 
     if (activeTab === 'cartao') {
       if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
-        alert('Número do cartão inválido')
+        ToastService.error('Número do cartão inválido')
         return false
       }
       if (!validity || validity.length !== 5) {
-        alert('Validade inválida')
+        ToastService.error('Validade inválida')
         return false
       }
       if (!cvv || cvv.length < 3) {
-        alert('CVV inválido')
+        ToastService.error('CVV inválido')
         return false
       }
       if (!cardName) {
-        alert('Nome do titular é obrigatório')
+        ToastService.error('Nome do titular é obrigatório')
         return false
       }
       if (!cpf || cpf.replace(/\D/g, '').length !== 11) {
-        alert('CPF inválido')
+        ToastService.error('CPF inválido')
         return false
       }
     }
@@ -125,13 +162,13 @@ export default function PagamentoPage() {
     setIsProcessing(true)
 
     try {
-      const pagamentoData: any = {
+      const pagamentoData: PagamentoRequest = {
         id_plano: plano.id,
-        tipo: activeTab === 'pix' ? 'pix' : 'cartao',
+        tipo: activeTab,
         valor: plano.valor,
       }
 
-      // Sempre adiciona objeto cartao, mesmo vazio para PIX
+      // Apenas adiciona cartão se for pagamento com cartão
       if (activeTab === 'cartao') {
         pagamentoData.cartao = {
           numero: cardNumber.replace(/\s/g, ''),
@@ -139,29 +176,31 @@ export default function PagamentoPage() {
           nome_titular: cardName,
           codigo_seguranca: cvv,
         }
-      } else {
-        // Para PIX, envia objeto cartao vazio ou com valores padrão
-        pagamentoData.cartao = {
-          numero: "",
-          validade: "",
-          nome_titular: "",
-          codigo_seguranca: "",
-        }
       }
-
-      console.log('Dados enviados para API:', pagamentoData)
 
       const response = await PlanoService.assinarPlano(pagamentoData)
 
-      if (response.status === 'success') {
-        alert('Plano assinado com sucesso!')
-        router.push('/') // ou outra página de sucesso
+      if (response.status === 'success' && response.data) {
+        // Salva informações do pagamento para exibir no modal
+        setPagamentoInfo(response.data as PagamentoResponse)
+        
+        if (activeTab === 'cartao') {
+          // Pagamento com cartão é processado automaticamente
+          ToastService.success('Pagamento processado com sucesso!', 'Seu plano foi ativado.')
+          setTimeout(() => {
+            router.push('/perfil')
+          }, 2000)
+        } else {
+          // Para PIX e Boleto, mostra modal com informações
+          setShowPaymentModal(true)
+        }
       } else {
-        alert(response.message || 'Erro ao processar pagamento')
+        ToastService.error(response.message || 'Erro ao processar pagamento')
       }
     } catch (err: any) {
       console.error('Erro ao processar pagamento:', err)
-      alert(err.response?.data?.message || 'Erro ao processar pagamento. Tente novamente.')
+      const errorMessage = err.response?.data?.message || 'Erro ao processar pagamento. Tente novamente.'
+      ToastService.error(errorMessage)
     } finally {
       setIsProcessing(false)
     }
@@ -169,6 +208,13 @@ export default function PagamentoPage() {
 
   const getBeneficiosArray = (): string[] => {
     if (!plano?.beneficios) return []
+    if (typeof plano.beneficios === 'string') {
+      try {
+        return JSON.parse(plano.beneficios)
+      } catch {
+        return []
+      }
+    }
     return Array.isArray(plano.beneficios) ? plano.beneficios : []
   }
 
@@ -220,10 +266,19 @@ export default function PagamentoPage() {
                           : "border-transparent text-gray-500 hover:text-gray-700"
                       }`}
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-                      </svg>
+                      <QrCode className="w-4 h-4" />
                       Pix
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("boleto")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                        activeTab === "boleto"
+                          ? "border-[#2E3192] text-[#2E3192]"
+                          : "border-transparent text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      <FileText className="w-4 h-4" />
+                      Boleto
                     </button>
                     <button
                       onClick={() => setActiveTab("cartao")}
@@ -233,119 +288,204 @@ export default function PagamentoPage() {
                           : "border-transparent text-gray-500 hover:text-gray-700"
                       }`}
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
-                      </svg>
+                      <CreditCard className="w-4 h-4" />
                       Cartão
                     </button>
                   </div>
 
-                  {/* PIX Message */}
+                  {/* Payment Method Info */}
                   {activeTab === "pix" && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-800">
-                        Após finalizar a compra, você receberá o código PIX para realizar o pagamento.
-                      </p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <QrCode className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-900 mb-1">Pagamento via PIX</p>
+                          <p className="text-xs text-blue-700">
+                            O pagamento será processado automaticamente. Após a confirmação, você receberá a chave PIX para realizar o pagamento.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "boleto" && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-green-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-green-900 mb-1">Pagamento via Boleto</p>
+                          <p className="text-xs text-green-700">
+                            O pagamento será processado automaticamente. Após a confirmação, você receberá o código de barras para realizar o pagamento.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "cartao" && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <CreditCard className="w-5 h-5 text-purple-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-purple-900 mb-1">Pagamento via Cartão</p>
+                          <p className="text-xs text-purple-700">
+                            O pagamento será processado automaticamente e seu plano será ativado imediatamente após a confirmação.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Card Form */}
                   {activeTab === "cartao" && (
-                    <div className="space-y-5">
-                      <div>
-                        <Label htmlFor="cardNumber" className="text-sm font-medium text-gray-700 mb-2 block">
-                          Número do cartão <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="relative">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                            <CreditCard className="w-5 h-5" />
+                    <div className="space-y-6">
+                      {/* Card Preview */}
+                      <div className="relative">
+                        <div className="relative h-48 rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-300 hover:scale-[1.02]">
+                          {/* Card Background Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#2E3192] via-[#1A1F71] to-[#0F1150]"></div>
+                          
+                          {/* Card Pattern Overlay */}
+                          <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32"></div>
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full -ml-24 -mb-24"></div>
                           </div>
-                          <Input
-                            id="cardNumber"
-                            placeholder="0000 0000 0000 0000"
-                            value={cardNumber}
-                            onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                            className="bg-white border-2 border-gray-200 pl-11 pr-16 h-14 text-base font-medium tracking-wider focus:border-[#2E3192] focus:ring-2 focus:ring-[#2E3192]/20 transition-all rounded-lg shadow-sm hover:border-gray-300"
-                          />
-                          {cardNumber.startsWith("4") && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              <div className="bg-[#1A1F71] text-white text-xs font-bold px-2.5 py-1 rounded">VISA</div>
+
+                          {/* Card Content */}
+                          <div className="relative h-full p-6 flex flex-col justify-between text-white">
+                            {/* Card Header */}
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-10 h-10 bg-white/20 rounded-lg backdrop-blur-sm flex items-center justify-center">
+                                  <CreditCard className="w-6 h-6" />
+                                </div>
+                              </div>
+                              {cardNumber.startsWith("4") && (
+                                <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                                  <span className="text-xs font-bold">VISA</span>
+                                </div>
+                              )}
                             </div>
-                          )}
+
+                            {/* Card Number */}
+                            <div className="space-y-1">
+                              <p className="text-xs text-white/70 font-medium tracking-wider">Número do Cartão</p>
+                              <p className="text-xl font-bold tracking-widest font-mono">
+                                {cardNumber || "0000 0000 0000 0000"}
+                              </p>
+                            </div>
+
+                            {/* Card Footer */}
+                            <div className="flex items-end justify-between">
+                              <div className="space-y-1">
+                                <p className="text-xs text-white/70 font-medium">Nome do Titular</p>
+                                <p className="text-sm font-semibold uppercase">
+                                  {cardName || "NOME COMPLETO"}
+                                </p>
+                              </div>
+                              <div className="text-right space-y-1">
+                                <p className="text-xs text-white/70 font-medium">Validade</p>
+                                <p className="text-sm font-semibold font-mono">
+                                  {validity || "MM/AA"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="validity" className="text-sm font-medium text-gray-700 mb-2 block">
-                            Validade <span className="text-red-500">*</span>
+                      {/* Form Fields */}
+                      <div className="space-y-5">
+                        {/* Card Number */}
+                        <div className="space-y-2">
+                          <Label htmlFor="cardNumber" className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                            Número do cartão
+                            <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="validity"
-                            placeholder="MM/AA"
-                            value={validity}
-                            onChange={(e) => setValidity(formatValidity(e.target.value))}
-                            maxLength={5}
-                            className="bg-white border-2 border-gray-200 h-14 text-base font-medium tracking-wider focus:border-[#2E3192] focus:ring-2 focus:ring-[#2E3192]/20 transition-all rounded-lg shadow-sm hover:border-gray-300"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvv" className="text-sm font-medium text-gray-700 mb-2 block">
-                            CVV <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="relative">
+                          <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E3192] transition-colors">
+                              <CreditCard className="w-5 h-5" />
+                            </div>
                             <Input
-                              id="cvv"
-                              placeholder="000"
-                              value={cvv}
-                              onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
-                              maxLength={4}
-                              type="password"
-                              className="bg-white border-2 border-gray-200 h-14 text-base font-medium tracking-wider focus:border-[#2E3192] focus:ring-2 focus:ring-[#2E3192]/20 transition-all rounded-lg shadow-sm hover:border-gray-300"
+                              id="cardNumber"
+                              placeholder="0000 0000 0000 0000"
+                              value={cardNumber}
+                              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                              className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 pl-12 pr-4 h-14 text-base font-semibold tracking-wider focus:border-[#2E3192] focus:ring-4 focus:ring-[#2E3192]/10 transition-all rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md"
+                              maxLength={19}
                             />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                              <Lock className="w-4 h-4" />
+                          </div>
+                        </div>
+
+                        {/* Validity and CVV */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="validity" className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                              Validade
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative group">
+                              <Input
+                                id="validity"
+                                placeholder="MM/AA"
+                                value={validity}
+                                onChange={(e) => setValidity(formatValidity(e.target.value))}
+                                maxLength={5}
+                                className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 h-14 text-base font-semibold tracking-wider focus:border-[#2E3192] focus:ring-4 focus:ring-[#2E3192]/10 transition-all rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="cvv" className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                              CVV
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative group">
+                              <Input
+                                id="cvv"
+                                placeholder="000"
+                                value={cvv}
+                                onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
+                                maxLength={4}
+                                type="password"
+                                className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 h-14 text-base font-semibold tracking-wider focus:border-[#2E3192] focus:ring-4 focus:ring-[#2E3192]/10 transition-all rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md pr-12"
+                              />
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E3192] transition-colors">
+                                <Lock className="w-4 h-4" />
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <Label htmlFor="cardName" className="text-sm font-medium text-gray-700 mb-2 block">
-                          Nome no cartão <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="cardName"
-                          placeholder="Nome completo"
-                          value={cardName}
-                          onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                          className="bg-white border-2 border-gray-200 h-14 text-base font-medium tracking-wider focus:border-[#2E3192] focus:ring-2 focus:ring-[#2E3192]/20 transition-all rounded-lg shadow-sm hover:border-gray-300"
-                        />
-                      </div>
+                        {/* Cardholder Name */}
+                        <div className="space-y-2">
+                          <Label htmlFor="cardName" className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                            Nome no cartão
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="cardName"
+                            placeholder="Nome completo como está no cartão"
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                            className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 h-14 text-base font-medium focus:border-[#2E3192] focus:ring-4 focus:ring-[#2E3192]/10 transition-all rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md uppercase"
+                          />
+                        </div>
 
-                      <div>
-                        <Label htmlFor="cpf" className="text-sm font-medium text-gray-700 mb-2 block">
-                          CPF do titular <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="cpf"
-                          placeholder="000.000.000-00"
-                          value={cpf}
-                          onChange={(e) => setCpf(formatCPF(e.target.value))}
-                          className="bg-white border-2 border-gray-200 h-14 text-base font-medium tracking-wider focus:border-[#2E3192] focus:ring-2 focus:ring-[#2E3192]/20 transition-all rounded-lg shadow-sm hover:border-gray-300"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2 pt-2">
-                        <Checkbox
-                          id="saveCard"
-                          checked={saveCard}
-                          onCheckedChange={(checked) => setSaveCard(checked as boolean)}
-                          className="data-[state=checked]:bg-[#2E3192] data-[state=checked]:border-[#2E3192]"
-                        />
-                        <Label htmlFor="saveCard" className="text-sm text-gray-700 cursor-pointer">
-                          Salvar cartão
-                        </Label>
+                        {/* CPF */}
+                        <div className="space-y-2">
+                          <Label htmlFor="cpf" className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                            CPF do titular
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="cpf"
+                            placeholder="000.000.000-00"
+                            value={cpf}
+                            onChange={(e) => setCpf(formatCPF(e.target.value))}
+                            className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 h-14 text-base font-semibold tracking-wider focus:border-[#2E3192] focus:ring-4 focus:ring-[#2E3192]/10 transition-all rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -456,6 +596,106 @@ export default function PagamentoPage() {
         </div>
       </div>
       <Footer />
+
+      {/* Modal de Informações de Pagamento (PIX/Boleto) */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {pagamentoInfo?.tipo === 'pix' ? (
+                <>
+                  <QrCode className="w-6 h-6 text-blue-600" />
+                  <span>Pagamento via PIX</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="w-6 h-6 text-green-600" />
+                  <span>Pagamento via Boleto</span>
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {pagamentoInfo?.tipo === 'pix' 
+                ? 'Copie a chave PIX e realize o pagamento no seu aplicativo bancário.'
+                : 'Copie o código de barras e realize o pagamento no seu banco ou aplicativo.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {pagamentoInfo?.tipo === 'pix' && pagamentoInfo.chave_pix && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Chave PIX</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={pagamentoInfo.chave_pix}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(pagamentoInfo.chave_pix!, 'Chave PIX')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {pagamentoInfo?.tipo === 'boleto' && pagamentoInfo.codigo_barras && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Código de Barras</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formatCodigoBarras(pagamentoInfo.codigo_barras)}
+                    readOnly
+                    className="font-mono text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(pagamentoInfo.codigo_barras!, 'Código de barras')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-900 mb-1">Pagamento processado!</p>
+                  <p className="text-xs text-green-700">
+                    Seu plano será ativado automaticamente após a confirmação do pagamento.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentModal(false)}
+                className="flex-1"
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowPaymentModal(false)
+                  router.push('/perfil')
+                }}
+                className="flex-1 bg-[#2E3192] hover:bg-[#252880]"
+              >
+                Ir para Perfil
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
