@@ -41,39 +41,25 @@ export default function PagamentoPage() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
-    carregarPlano()
-  }, [])
+    const planoId = searchParams.get('planoId')
+    
+    if (planoId) {
+      carregarPlano(Number(planoId))
+    } else {
+      setLoadingPlano(false)
+      alert('ID do plano não encontrado')
+      router.push('/planos')
+    }
+  }, [searchParams, router])
 
-  const carregarPlano = async () => {
+  const carregarPlano = async (planoId: number) => {
     try {
       setLoadingPlano(true)
-      const planoId = searchParams.get('planoId')
-      
-      if (!planoId) {
-        alert('ID do plano não encontrado')
-        router.push('/planos')
-        return
-      }
-
-      const response = await PlanoService.buscarPlanoPorId(Number(planoId))
-      
-      if (response.status === 'success') {
-        // Processar beneficios se vier como string JSON
-        const planoData = {
-          ...response.data,
-          beneficios: typeof response.data.beneficios === 'string' 
-            ? JSON.parse(response.data.beneficios) 
-            : response.data.beneficios
-        }
-        setPlano(planoData)
-      } else {
-        alert('Erro ao carregar plano')
-        router.push('/planos')
-      }
+      const data = await PlanoService.buscarPlanoPorId(planoId)
+      setPlano(data)
     } catch (err) {
       console.error('Erro ao carregar plano:', err)
-      alert('Erro ao carregar plano')
-      router.push('/planos')
+      alert('Erro ao carregar plano. Tente novamente.')
     } finally {
       setLoadingPlano(false)
     }

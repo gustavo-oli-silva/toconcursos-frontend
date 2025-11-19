@@ -25,9 +25,9 @@ export default function PlanosPage() {
       setLoading(true)
       const response = await PlanoService.buscarTodosPlanos(0, 100)
       
-      if (response.status === 'success') {
+      if (response) {
         // Processar beneficios de string JSON para array
-        const planosProcessados = response.data.map((plano: Plano) => ({
+        const planosProcessados = response.map((plano: Plano) => ({
           ...plano,
           beneficios: typeof plano.beneficios === 'string' 
             ? JSON.parse(plano.beneficios) 
