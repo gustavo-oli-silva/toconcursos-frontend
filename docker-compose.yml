@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  # Development (default service) - mounts code and runs `npm run dev`
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app:cached
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -c "npm ci && npm run dev"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://host.docker.internal:8080
+      - NEXT_TELEMETRY_DISABLED=1
+      # Improve file watching on Windows hosts
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
+    name: toconcursos_node_modules
