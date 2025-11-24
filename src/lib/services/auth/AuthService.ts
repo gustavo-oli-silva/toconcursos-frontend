@@ -85,5 +85,32 @@ export const AuthService = {
       console.error("Erro ao buscar perfil do usuário:", error);
       throw error;
     }
-  }
+  },
+
+  // Redireciona para o endpoint do backend que inicia o fluxo OAuth do Google
+  loginGoogle(): void {
+    // O backend retorna um RedirectResponse, então simplesmente redirecionamos o navegador
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/login/google`;
+  },
+
+  // Callback do Google - recebe o código e troca por token
+  async loginGoogleCallback(code: string): Promise<string> {
+    try {
+      // O backend espera o code como query parameter (GET), não no body
+      const respostaAxios = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login/google/callback?code=${code}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      // O backend retorna { data: { access_token: string, token_type: "bearer" } }
+      return respostaAxios.data.data.access_token;
+    }
+    catch (error) {
+      console.error("Erro ao fazer login com Google no serviço:", error);
+      throw error;
+    }
+  },
 };
