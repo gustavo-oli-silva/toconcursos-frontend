@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+// try commit
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
