@@ -15,12 +15,13 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { AuthService } from "@/lib/services/auth/AuthService"
-import { useRouter } from "next/dist/client/components/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 
 export function LoginForm() {
    const [showPassword, setShowPassword] = useState(false)
    const router = useRouter();
+   const searchParams = useSearchParams();
   const { login } = useAuth();
   const formSchema = z
     .object({
@@ -43,7 +44,12 @@ export function LoginForm() {
       const user = dadosParaApi
       await login(user)
       toast.success("Bem vindo concurseiro!")
-      router.push("/questoes")
+      const redirectTo = searchParams.get("from")
+      if (redirectTo) {
+        router.push(redirectTo)
+      } else {
+        router.push("/questoes")
+      }
       form.reset();
 
     } catch (error) {

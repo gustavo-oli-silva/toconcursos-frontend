@@ -1,3 +1,5 @@
+ "use client"
+
 import { Card, CardContent } from "../ui/card"
 import { Label } from "../ui/label"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
@@ -23,6 +25,8 @@ import {
 import { QuestaoService } from "@/lib/services/questao/QuestaoService"
 import { IGeminiResposta } from "@/types/questao/IGeminiResposta"
 import { MarkdownRenderer } from "./MarkdownRenderer"
+import { useAuth } from "@/hooks/useAuth"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 interface QuestaoProps {
     questao: IQuestao;
@@ -46,6 +50,11 @@ export function Questao({
     const [geminiResposta, setGeminiResposta] = useState<IGeminiResposta | null>(null);
     const [isLoadingGemini, setIsLoadingGemini] = useState(false);
     const [explicacaoAberta, setExplicacaoAberta] = useState<string | undefined>(undefined);
+
+    const { user } = useAuth();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     
     const handleComentarioAdicionado = (novoComentario: any) => {
         setComentarios(prev => {
@@ -80,6 +89,14 @@ export function Questao({
     async function handleSubmit(respostaSelecionada: string | null): Promise<void> {
         if (!respostaSelecionada) {
             toast.error("Selecione uma alternativa!");
+            return;
+        }
+
+        // Se o usuário não estiver logado, avisa e redireciona para login
+        if (!user) {
+            const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+            toast.warning("Você precisa estar logado para responder questões.");
+            router.push(`/login?from=${encodeURIComponent(currentUrl)}`);
             return;
         }
 
