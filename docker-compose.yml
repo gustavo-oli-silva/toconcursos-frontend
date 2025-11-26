@@ -12,7 +12,7 @@ services:
     command: sh -c "npm ci && npm run dev"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://host.docker.internal:8080
+      - NEXT_PUBLIC_API_URL=http://152.67.61.34:7000
       - NEXT_TELEMETRY_DISABLED=1
       # Improve file watching on Windows hosts
       - CHOKIDAR_USEPOLLING=true
