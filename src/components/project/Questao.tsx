@@ -158,15 +158,6 @@ export function Questao({
                             <span className="text-sm text-slate-600">{contextoProva} - {anoProva}</span>
                         </div>
                         {/* Botão Salvar */}
-                        <Button
-                            onClick={handleSalvar}
-                            variant="default"
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                            <Save className="w-4 h-4 mr-2" />
-                            Salvar
-                        </Button>
                     </div>
                 </div>
 
