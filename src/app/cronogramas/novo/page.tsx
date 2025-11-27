@@ -75,16 +75,39 @@ export default function NewCronogramaScreen() {
   }
 
   const handleAddEstudo = () => {
-    if (novoEstudo.hora_inicio && novoEstudo.hora_fim && novoEstudo.dia_da_semana && novoEstudo.disciplina) {
-      setEstudosDiarios((prev) => {
-        const newList = [...prev, novoEstudo as EstudoDiario]
-        console.log("Estudo adicionado. Total:", newList.length, "estudos:", newList)
-        return newList
-      })
-      setNovoEstudo({})
-      setIsDialogOpen(false)
-      setErrors([])
+    const { hora_inicio, hora_fim, dia_da_semana, disciplina } = novoEstudo
+
+    // Validação de horários obrigatórios
+    if (!hora_inicio || !hora_fim) {
+      ToastService.error("Informe o horário de início e de término do estudo.")
+      return
     }
+
+    // Validação: horário final deve ser maior que o inicial
+    const [inicioHora, inicioMin] = hora_inicio.split(":").map(Number)
+    const [fimHora, fimMin] = hora_fim.split(":").map(Number)
+    const inicioTotalMin = inicioHora * 60 + inicioMin
+    const fimTotalMin = fimHora * 60 + fimMin
+
+    if (fimTotalMin <= inicioTotalMin) {
+      ToastService.error("O horário de término deve ser maior que o horário de início.")
+      return
+    }
+
+    // Validação de demais campos obrigatórios
+    if (!dia_da_semana || !disciplina) {
+      ToastService.error("Selecione o dia da semana e a disciplina.")
+      return
+    }
+
+    setEstudosDiarios((prev) => {
+      const newList = [...prev, novoEstudo as EstudoDiario]
+      console.log("Estudo adicionado. Total:", newList.length, "estudos:", newList)
+      return newList
+    })
+    setNovoEstudo({})
+    setIsDialogOpen(false)
+    setErrors([])
   }
 
   const handleRemoveEstudo = (index: number) => {

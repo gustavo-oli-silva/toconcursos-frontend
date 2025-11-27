@@ -7,19 +7,9 @@ const faqs = [
       "Nossa plataforma oferece um ambiente completo de estudos com banco de questões, simulados, relatórios de desempenho e comunidade. Você pode estudar no seu ritmo, acompanhar seu progresso e se preparar de forma eficiente para concursos públicos.",
   },
   {
-    question: "Posso cancelar minha assinatura a qualquer momento?",
-    answer:
-      "Sim! Você pode cancelar sua assinatura a qualquer momento através da sua área do usuário. Não há multas ou taxas de cancelamento, e você continuará tendo acesso até o final do período já pago.",
-  },
-  {
     question: "As questões são atualizadas regularmente?",
     answer:
       "Sim, nosso banco de questões é constantemente atualizado com as provas mais recentes dos principais concursos do país. Nossa equipe pedagógica trabalha diariamente para manter o conteúdo sempre atual e relevante.",
-  },
-  {
-    question: "Existe suporte técnico disponível?",
-    answer:
-      "Oferecemos suporte técnico completo por email, chat e telefone. Nosso time está disponível de segunda a sexta, das 8h às 18h, para ajudar com qualquer dúvida ou problema técnico.",
   },
   {
     question: "Posso acessar a plataforma pelo celular?",
@@ -31,16 +21,7 @@ const faqs = [
     answer:
       "Embora não possamos garantir aprovação (que depende de diversos fatores), oferecemos todas as ferramentas necessárias para uma preparação de qualidade. Temos mais de 15.000 aprovados que utilizaram nossa plataforma.",
   },
-  {
-    question: "Como funcionam os relatórios de desempenho?",
-    answer:
-      "Nossos relatórios mostram estatísticas detalhadas do seu desempenho por matéria, tipo de questão e evolução temporal. Você pode identificar pontos fortes e fracos, otimizando seu tempo de estudo.",
-  },
-  {
-    question: "Existe desconto para estudantes?",
-    answer:
-      "Sim! Oferecemos descontos especiais para estudantes universitários mediante comprovação. Entre em contato com nosso suporte para mais informações sobre condições especiais.",
-  },
+  
 ]
 
 export function FaqSection() {
