@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,23 +10,29 @@ import { Cronograma } from "@/types/cronograma/Cronograma";
 import { CronogramaService } from "@/lib/services/cronograma/CronogramaService";
 import { DialogGenerico } from "@/components/project/dialogs/DialogGenerico";
 import { ToastService } from "@/lib/services/toast/ToastService";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CronogramasPage() {
   const [cronogramas, setCronogramas] = useState<Cronograma[]>([]);
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCronogramaId, setSelectedCronogramaId] = useState<number | null>(null);
-  const loadCronogramas = async () => {
+  const { user, loading: authLoading } = useAuth();
+
+  const loadCronogramas = useCallback(async () => {
     try {
       const cronogramasDoBackend = await CronogramaService.buscarCronogramas();
       setCronogramas(cronogramasDoBackend || []);
     } catch (error) {
       console.error("Erro ao carregar cronogramas:", error);
     }
-  };
-  useEffect(() => {
-    loadCronogramas();
   }, []);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      loadCronogramas();
+    }
+  }, [authLoading, user, loadCronogramas]);
 
   const getTotalHorasSemanais = (cronograma: Cronograma) => {
     // Verifica se estudosDiarios existe e é um array
@@ -97,7 +103,27 @@ export default function CronogramasPage() {
 
           {/* Lista de Cronogramas */}
           <section className="space-y-6">
-            {cronogramas.length === 0 ? (
+            {!authLoading && !user ? (
+              <Card className="p-12 text-center bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl shadow-xl">
+                <div className="flex flex-col items-center gap-4">
+                  <Calendar className="h-16 w-16 text-slate-400" />
+                  <div>
+                    <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                      Você ainda não está logado
+                    </h3>
+                    <p className="text-slate-500 mb-6">
+                      Faça login para criar e visualizar seus primeiros cronogramas de estudo.
+                    </p>
+                    <Button
+                      onClick={() => router.push("/login")}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                    >
+                      Fazer login
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ) : cronogramas.length === 0 ? (
               <Card className="p-12 text-center bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-3xl shadow-xl">
                 <div className="flex flex-col items-center gap-4">
                   <Calendar className="h-16 w-16 text-slate-400" />

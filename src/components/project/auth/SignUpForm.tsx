@@ -19,6 +19,7 @@ export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
+  const [backendError, setBackendError] = useState<string | null>(null)
   const router = useRouter();
   const login = useAuth().login;
 
@@ -57,6 +58,8 @@ export function SignupForm() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setBackendError(null)
+
     if (!acceptTerms) {
       toast.error("Você deve aceitar os termos de uso e política de privacidade.")
       return
@@ -75,6 +78,15 @@ export function SignupForm() {
       setAcceptTerms(false)
     } catch (error) {
       console.error("Erro ao realizar cadastro:", error)
+      const anyError = error as any
+      const status = anyError?.response?.status
+      const message = anyError?.response?.data?.message as string | undefined
+
+      if (status === 409 && message) {
+        setBackendError(message)
+        return
+      }
+
       toast.error("Erro ao realizar cadastro. Tente novamente.")
     }
   }
@@ -236,6 +248,13 @@ export function SignupForm() {
         >
           Cadastrar
         </Button>
+
+        {/* Backend Error Label */}
+        {backendError && (
+          <p className="text-sm text-red-600 text-center">
+            {backendError}
+          </p>
+        )}
 
         {/* Social Signup */}
         <div className="space-y-4">
