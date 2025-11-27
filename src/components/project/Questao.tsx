@@ -7,7 +7,7 @@ interface ResolucaoQuestaoPayload {
     questao_id: number;
     is_certa: boolean;
 }
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import ListaComentarios from "./comentario/ListaComentarios";
 import FormComentario from "./comentario/FormComentario";
 import { MessageCircle, Save, CheckCircle2, XCircle, Loader2, Scissors, Sparkles } from "lucide-react"
@@ -188,9 +188,55 @@ export function Questao({
 
                     {/* Texto da Questão */}
                     <div className="mb-6">
-                        <p className="text-base text-slate-800 leading-relaxed">
-                            {questao.enunciado}
-                        </p>
+                        <div className="text-base text-slate-800 leading-relaxed space-y-2">
+                            {questao.enunciado_linhas && questao.enunciado_linhas.length > 0 ? (
+                                (() => {
+                                    const isRomanItem = (line: string) =>
+                                        /^\s*(I{1,3})\s*[\.\)]/.test(line);
+
+                                    const nodes: ReactNode[] = [];
+                                    let currentListItems: string[] = [];
+
+                                    const flushList = () => {
+                                        if (currentListItems.length > 0) {
+                                            nodes.push(
+                                                <ul
+                                                    key={`ul-${nodes.length}`}
+                                                    className="list-disc list-inside space-y-1 ml-4"
+                                                >
+                                                    {currentListItems.map((item, idx) => (
+                                                        <li key={idx}>{item}</li>
+                                                    ))}
+                                                </ul>
+                                            );
+                                            currentListItems = [];
+                                        }
+                                    };
+
+                                    questao.enunciado_linhas!.forEach((rawLine, idx) => {
+                                        const line = rawLine.trim();
+                                        if (!line) return;
+
+                                        if (isRomanItem(line)) {
+                                            currentListItems.push(line);
+                                        } else {
+                                            flushList();
+                                            nodes.push(
+                                                <p key={`p-${idx}`} className="mb-1">
+                                                    {line}
+                                                </p>
+                                            );
+                                        }
+                                    });
+
+                                    flushList();
+
+                                    return nodes;
+                                })()
+                            ) : (
+                                <p>{questao.enunciado}</p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Feedback Banner */}
