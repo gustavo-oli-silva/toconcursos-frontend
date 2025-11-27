@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   env: {
-    NEXT_PUBLIC_API_URL: "http://localhost:8080",
+    NEXT_PUBLIC_API_URL: "http://152.67.61.34:7000",
   },
 };
 
